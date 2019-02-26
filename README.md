@@ -1,0 +1,2 @@
+# pyWinLocale
+Windows Locale Simplified
