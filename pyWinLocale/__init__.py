@@ -1382,8 +1382,11 @@ class Language(object):
     ISO639_3 = None
     _lcid = None
     _lang_id = None
+    _english_name = ''
+    _native_name = u''
 
     def __init__(self, locale_name, lcid=None):
+        self._locale_name = locale_name
         if lcid is not None:
             self._lcid = lcid
         self.locale = None
@@ -1489,7 +1492,7 @@ class Language(object):
                 print(
                     _locale.setlocale(
                         _locale.LC_ALL,
-                        iso_code + '.' + code_page
+                        c_page
                     )
                 )
                 return True
@@ -1503,7 +1506,6 @@ class Language(object):
             return
 
         set_locale(None)
-
 
     @property
     def ansi_code_page(self):
@@ -1569,8 +1571,16 @@ class Language(object):
     LOCALE_SNATIVEDISPLAYNAME = 0x00000073
 
     @property
+    def english_label(self):
+        return self._english_name + ' (' + self.locale.english_name + ')'
+
+    @property
     def native_label(self):
-        return self.get_locale_info(self.LOCALE_SNATIVEDISPLAYNAME)
+        res = self.get_locale_info(self.LOCALE_SNATIVEDISPLAYNAME)
+        if not res:
+            res = self._native_name + u' (' + self._locale_name + u')'
+
+        return res
 
     # Language Display Name for a language, eg "German" in UI language
     # DONE
@@ -1586,7 +1596,11 @@ class Language(object):
 
     @property
     def english_name(self):
-        return self.get_locale_info(self.LOCALE_SENGLISHLANGUAGENAME)
+        res = self.get_locale_info(self.LOCALE_SENGLISHLANGUAGENAME)
+        if not res:
+            res = self._english_name
+
+        return res
 
     # native name of language, eg "Deutsch"
     # DONE
@@ -1594,7 +1608,11 @@ class Language(object):
 
     @property
     def native_name(self):
-        return self.get_locale_info(self.LOCALE_SNATIVELANGUAGENAME)
+        res = self.get_locale_info(self.LOCALE_SNATIVELANGUAGENAME)
+        if not res:
+            res = self._native_name
+
+        return res
 
     # localized name of country/region, eg "Germany" in UI language
     # DONE
@@ -1610,7 +1628,11 @@ class Language(object):
 
     @property
     def english_locale_name(self):
-        return self.get_locale_info(self.LOCALE_SENGLISHCOUNTRYNAME)
+        res = self.get_locale_info(self.LOCALE_SENGLISHCOUNTRYNAME)
+        if not res:
+            res = self.locale.english_name
+
+        return res
 
     # native name of country/region, eg "Deutschland"
     # DONE
@@ -1618,7 +1640,11 @@ class Language(object):
 
     @property
     def native_locale_name(self):
-        return self.get_locale_info(self.LOCALE_SNATIVECOUNTRYNAME)
+        res = self.get_locale_info(self.LOCALE_SNATIVECOUNTRYNAME)
+        if not res:
+            res = self._locale_name
+
+        return res
 
     # Additional LCTypes
     # country/region dialing code, example: en-US and en-CA return 1.
@@ -2697,7 +2723,7 @@ class LocaleMeta(type):
 class Locale(object):
 
     _iso_code = ''
-    english_name = ''
+    _english_name = ''
     _flag = ''
     languages = []
 
@@ -2722,6 +2748,10 @@ class Locale(object):
                 return language
 
         raise AttributeError(item)
+
+    @property
+    def english_name(self):
+        return self._english_name
 
     def __getitem__(self, item):
         for language in self:
@@ -2761,62 +2791,62 @@ class Locale(object):
 class Afar(Language):
     ISO639_1 = 'aa'
     ISO639_2 = 'aar'
-    english_name = 'Afar'
-    native_name = u'Qafár af'
+    _english_name = 'Afar'
+    _native_name = u'Qafár af'
     _lang_id = 0x1000
 
 
 class Afrikaans(Language):
     ISO639_1 = 'af'
     ISO639_2 = 'afr'
-    english_name = 'Afrikaans'
-    native_name = u'Afrikaans'
+    _english_name = 'Afrikaans'
+    _native_name = u'Afrikaans'
     _lang_id = 0x0036
 
 
 class Aghem(Language):
     ISO639_2 = 'agq'
-    english_name = 'Aghem'
-    native_name = u'Aghem'
+    _english_name = 'Aghem'
+    _native_name = u'Aghem'
     _lang_id = 0x1000
 
 
 class Akan(Language):
     ISO639_1 = 'ak'
     ISO639_2 = 'aka'
-    english_name = 'Akan'
-    native_name = u'Akan'
+    _english_name = 'Akan'
+    _native_name = u'Akan'
     _lang_id = 0x1000
 
 
 class Albanian(Language):
     ISO639_1 = 'sq'
     ISO639_2 = 'alb'
-    english_name = 'Albanian'
-    native_name = u'Shqip'
+    _english_name = 'Albanian'
+    _native_name = u'Shqip'
     _lang_id = 0x001C
 
 
 class SwissGerman(Language):
     ISO639_2 = 'gsw'
-    english_name = 'Swiss German'
-    nnative_name = u'Schwiizerdütsch'
+    _english_name = 'Swiss German'
+    n_native_name = u'Schwiizerdütsch'
     _lang_id = 0x0084
 
 
 class Amharic(Language):
     ISO639_1 = 'am'
     ISO639_2 = 'amh'
-    english_name = 'Amharic'
-    native_name = u'አማርኛ'
+    _english_name = 'Amharic'
+    _native_name = u'አማርኛ'
     _lang_id = 0x005E
 
 
 class Arabic(Language):
     ISO639_1 = 'ar'
     ISO639_2 = 'ara'
-    english_name = 'Arabic'
-    native_name = u'العَرَبِيَّة'
+    _english_name = 'Arabic'
+    _native_name = u'العَرَبِيَّة'
     _lang_id = 0x0001
 
 
@@ -2824,153 +2854,153 @@ class Armenian(Language):
     ISO639_1 = 'hy'
     ISO639_2 = 'arm'
     ISO639_3 = 'hye'
-    english_name = 'Armenian'
-    native_name = u' Հայերէն'
+    _english_name = 'Armenian'
+    _native_name = u' Հայերէն'
     _lang_id = 0x002B
 
 
 class Assamese(Language):
     ISO639_1 = 'as'
     ISO639_2 = 'asm'
-    english_name = 'Assamese'
-    native_name = u'অসমীয়া'
+    _english_name = 'Assamese'
+    _native_name = u'অসমীয়া'
     _lang_id = 0x004D
 
 
 class Asturian(Language):
     ISO639_2 = 'ast'
-    english_name = 'Asturian'
-    native_name = u'Asturianu'
+    _english_name = 'Asturian'
+    _native_name = u'Asturianu'
     _lang_id = 0x1000
 
 
 class Asu(Language):
     ISO639_2 = 'asa'
-    english_name = 'Asu'
-    native_name = u'Asu'
+    _english_name = 'Asu'
+    _native_name = u'Asu'
     _lang_id = 0x1000
 
 
 class Aymara(Language):
     ISO639_1 = 'ay'
     ISO639_2 = 'aym'
-    english_name = 'Aymara'
-    native_name = u'Aymar aru'
+    _english_name = 'Aymara'
+    _native_name = u'Aymar aru'
 
 
 class AzerbaijaniCyrillic(Language):
     ISO639_3 = 'az-Cyrl'
-    english_name = 'Azerbaijani'
-    native_name = u'Азәрбајҹан дили'
+    _english_name = 'Azerbaijani'
+    _native_name = u'Азәрбајҹан дили'
     _lang_id = 0x742C
 
 
 class AzerbaijaniLatin(Language):
     ISO639_3 = 'az-Latn'
-    english_name = 'Azerbaijani'
-    native_name = u'Azərbaycan dili'
+    _english_name = 'Azerbaijani'
+    _native_name = u'Azərbaycan dili'
     _lang_id = 0x782C
 
 
 class Azerbaijani(Language):
     ISO639_1 = 'az'
     ISO639_2 = 'aze'
-    english_name = 'Azerbaijani'
-    native_name = u'آذربایجان دیلی'
+    _english_name = 'Azerbaijani'
+    _native_name = u'آذربایجان دیلی'
     _lang_id = 0x002C
 
 
 class Bafia(Language):
     ISO639_2 = 'ksf'
-    english_name = 'Bafia'
-    native_name = u'Bafia'
+    _english_name = 'Bafia'
+    _native_name = u'Bafia'
     _lang_id = 0x1000
 
 
 class Bamanankan(Language):
     ISO639_1 = 'bm'
-    english_name = 'Bamanankan'
-    native_name = u'Bamanankan'
+    _english_name = 'Bamanankan'
+    _native_name = u'Bamanankan'
     _lang_id = 0x1000
 
 
 class BamanankanLatin(Language):
     ISO639_1 = 'bm'
     ISO639_3 = 'bm-Latn'
-    english_name = 'Bamanankan (Latin)'
-    native_name = u'Bamanankan (Latin)'
+    _english_name = 'Bamanankan (Latin)'
+    _native_name = u'Bamanankan (Latin)'
     _lang_id = 0x1000
 
 
 class Basaa(Language):
     ISO639_2 = 'bas'
-    english_name = 'Basaa'
-    native_name = u'Basaa'
+    _english_name = 'Basaa'
+    _native_name = u'Basaa'
     _lang_id = 0x1000
 
 
 class Bashkir(Language):
     ISO639_1 = 'ba'
-    english_name = 'Bashkir'
-    native_name = u' Башҡорт теле'
+    _english_name = 'Bashkir'
+    _native_name = u' Башҡорт теле'
     _lang_id = 0x006D
 
 
 class Basque(Language):
     ISO639_1 = 'eu'
     ISO639_2 = 'baq'
-    english_name = 'Basque'
-    native_name = u'euskara'
+    _english_name = 'Basque'
+    _native_name = u'euskara'
     _lang_id = 0x002D
 
 
 class Bavarian(Language):
     ISO639_2 = 'bar'
-    english_name = 'Bavarian'
-    native_name = u'bairisch'
+    _english_name = 'Bavarian'
+    _native_name = u'bairisch'
 
 
 class Belarusian(Language):
     ISO639_1 = 'be'
     ISO639_2 = 'bel'
-    english_name = 'Belarusian'
-    native_name = u'Беларуская мова'
+    _english_name = 'Belarusian'
+    _native_name = u'Беларуская мова'
     _lang_id = 0x0023
 
 
 class Bemba(Language):
     ISO639_2 = 'bem'
-    english_name = 'Bemba'
-    native_name = u'Chibemba'
+    _english_name = 'Bemba'
+    _native_name = u'Chibemba'
     _lang_id = 0x1000
 
 
 class Bena(Language):
     ISO639_2 = 'bez'
-    english_name = 'Bena'
-    native_name = u'Bena'
+    _english_name = 'Bena'
+    _native_name = u'Bena'
     _lang_id = 0x1000
 
 
 class Blin(Language):
     ISO639_2 = 'byn'
-    english_name = 'Blin'
-    native_name = u'ብሊን'
+    _english_name = 'Blin'
+    _native_name = u'ብሊን'
     _lang_id = 0x1000
 
 
 class Bodo(Language):
     ISO639_1 = 'brx'
-    english_name = 'Bodo'
-    native_name = u'Bodo'
+    _english_name = 'Bodo'
+    _native_name = u'Bodo'
     _lang_id = 0x1000
 
 
 class Bosnian(Language):
     ISO639_1 = 'bs'
     ISO639_2 = 'bos'
-    english_name = 'Bosnian'
-    native_name = u'босански'
+    _english_name = 'Bosnian'
+    _native_name = u'босански'
     _lang_id = 0x781A
 
 
@@ -2978,8 +3008,8 @@ class BosnianCyrillic(Language):
     ISO639_1 = 'bs'
     ISO639_2 = 'bos'
     ISO639_3 = 'bs-Cyrl'
-    english_name = 'Bosnian (Cyrillic)'
-    native_name = u'беларуская мова'
+    _english_name = 'Bosnian (Cyrillic)'
+    _native_name = u'беларуская мова'
     _lang_id = 0x641A
 
 
@@ -2987,70 +3017,70 @@ class BosnianLatin(Language):
     ISO639_1 = 'bs'
     ISO639_2 = 'bos'
     ISO639_3 = 'bs-Latn'
-    english_name = 'Bosnian (Latin)'
-    native_name = u'bosanski'
+    _english_name = 'Bosnian (Latin)'
+    _native_name = u'bosanski'
     _lang_id = 0x681A
 
 
 class Breton(Language):
     ISO639_1 = 'br'
     ISO639_2 = 'bre'
-    english_name = 'Breton'
-    native_name = u'Brezhoneg'
+    _english_name = 'Breton'
+    _native_name = u'Brezhoneg'
     _lang_id = 0x007E
 
 
 class Bulgarian(Language):
     ISO639_1 = 'bg'
     ISO639_2 = 'bul'
-    english_name = 'Bulgarian'
-    native_name = u'български език'
+    _english_name = 'Bulgarian'
+    _native_name = u'български език'
     _lang_id = 0x0002
 
 
 class Bislama(Language):
     ISO639_1 = 'bi'
     ISO639_2 = 'bis'
-    english_name = 'Bislama'
-    native_name = u'Bislama'
+    _english_name = 'Bislama'
+    _native_name = u'Bislama'
 
 
 class Bengali(Language):
     ISO639_1 = 'bn'
     ISO639_2 = 'ben'
-    english_name = 'Bengali'
-    native_name = u'বাংলা'
+    _english_name = 'Bengali'
+    _native_name = u'বাংলা'
     _lang_id = 0x0045
 
 
 class Burmese(Language):
     ISO639_1 = 'my'
     ISO639_2 = 'bur'
-    english_name = 'Burmese'
-    native_name = u'မြန်မာစာ'
+    _english_name = 'Burmese'
+    _native_name = u'မြန်မာစာ'
     _lang_id = 0x0055
 
 
 class Catalan(Language):
     ISO639_1 = 'ca'
     ISO639_2 = 'cat'
-    english_name = 'Catalan'
-    native_name = u'català'
+    _english_name = 'Catalan'
+    _native_name = u'català'
     _lang_id = 0x0003
 
 
 class CentralAtlasTamazightLatin(Language):
     ISO639_3 = 'tzm-Latn-MA'
-    english_name = 'Central Atlas Tamazight (Latin)'
-    native_name = u'Central Atlas Tamazight (Latin)'
+    _english_name = 'Central Atlas Tamazight (Latin)'
+    _native_name = u'Central Atlas Tamazight (Latin)'
     _lang_id = 0x1000
 
 
 class CentralKurdish(Language):
     ISO639_1 = 'ku'
     ISO639_2 = 'kur'
-    english_name = 'Central Kurdish'
-    native_name = u'Kurdî'
+    _english_name = 'Central Kurdish'
+    _native_name = u'Kurdî'
     _lang_id = 0x0092
 
 
@@ -3058,352 +3088,352 @@ class CentralKurdishArab(Language):
     ISO639_1 = 'ku'
     ISO639_2 = 'kur'
     ISO639_3 = 'ku-Arab'
-    english_name = 'Central Kurdish (Arab)'
-    native_name = u'کوردی (Arab)'
+    _english_name = 'Central Kurdish (Arab)'
+    _native_name = u'کوردی (Arab)'
     _lang_id = 0x7c92
 
 
 class Chamorro(Language):
     ISO639_1 = 'ch'
     ISO639_2 = 'cha'
-    english_name = 'Chamorro'
+    _english_name = 'Chamorro'
     native_language = u'Finu\' Chamoru'
 
 
 class Chechen(Language):
     ISO639_1 = 'ce'
     ISO639_2 = 'che'
-    english_name = 'Chechen'
-    native_name = u'Нохчийн мотт'
+    _english_name = 'Chechen'
+    _native_name = u'Нохчийн мотт'
     _lang_id = 0x1000
 
 
 class Cherokee(Language):
     ISO639_2 = 'chr'
-    english_name = 'Cherokee'
-    native_name = u'ᏣᎳᎩ ᎦᏬᏂᎯᏍᏗ'
+    _english_name = 'Cherokee'
+    _native_name = u'ᏣᎳᎩ ᎦᏬᏂᎯᏍᏗ'
     _lang_id = 0x005C
 
 
 class Chiga(Language):
     ISO639_2 = 'cgg'
-    english_name = 'Chiga'
-    native_name = u'Chiga'
+    _english_name = 'Chiga'
+    _native_name = u'Chiga'
     _lang_id = 0x1000
 
 
 class ChineseSimplified(Language):
     ISO639_1 = 'zh'
-    english_name = 'Chinese (Simplified)'
-    native_name = u'中文'
+    _english_name = 'Chinese (Simplified)'
+    _native_name = u'中文'
     _lang_id = 0x7804
 
 
 class ChineseSimplifiedHans(Language):
     ISO639_2 = 'chi'
     ISO639_3 = 'zh-Hans'
-    english_name = 'Chinese (Simplified)'
-    native_name = u'汉语'
+    _english_name = 'Chinese (Simplified)'
+    _native_name = u'汉语'
     _lang_id = 0x0004
 
 
 class ChineseTraditional(Language):
     ISO639_2 = 'zho'
     ISO639_3 = 'zh-Hant'
-    english_name = 'Chinese (Traditional)'
-    native_name = u'漢語'
+    _english_name = 'Chinese (Traditional)'
+    _native_name = u'漢語'
     _lang_id = 0x7C04
 
 
 class ChurchSlavic(Language):
     ISO639_1 = 'cu'
     ISO639_2 = 'chu'
-    english_name = 'Church Slavic'
-    native_name = u'Славе́нскїй ѧ҆зы́къ'
+    _english_name = 'Church Slavic'
+    _native_name = u'Славе́нскїй ѧ҆зы́къ'
     _lang_id = 0x1000
 
 
 class CongoSwahili(Language):
     ISO639_2 = 'swc'
-    english_name = 'Congo Swahili'
-    native_name = u'Congo Swahili'
+    _english_name = 'Congo Swahili'
+    _native_name = u'Congo Swahili'
     _lang_id = 0x1000
 
 
 class Cornish(Language):
     ISO639_1 = 'kw'
     ISO639_2 = 'cor'
-    english_name = 'Cornish'
-    native_name = u'Kernowek'
+    _english_name = 'Cornish'
+    _native_name = u'Kernowek'
     _lang_id = 0x1000
 
 
 class Corsican(Language):
     ISO639_1 = 'co'
     ISO639_2 = 'cos'
-    english_name = 'Corsican'
-    native_name = u'Corsu'
+    _english_name = 'Corsican'
+    _native_name = u'Corsu'
     _lang_id = 0x0083
 
 
 class CroatianLatin(Language):
     ISO639_1 = 'hr'
     ISO639_2 = 'hrv'
-    english_name = 'Croatian (Latin)'
-    native_name = u'hrvatski'
+    _english_name = 'Croatian (Latin)'
+    _native_name = u'hrvatski'
     _lang_id = 0x001A
 
 
 class Croatian1(Language):
     ISO639_1 = 'bs'
-    english_name = 'Croatian (?)'
-    native_name = u'Croatian (?)'
+    _english_name = 'Croatian (?)'
+    _native_name = u'Croatian (?)'
     _lang_id = 0x001A
 
 
 class Croatian2(Language):
     ISO639_1 = 'sr'
-    english_name = 'Croatian (?)'
-    native_name = u'Croatian (?)'
+    _english_name = 'Croatian (?)'
+    _native_name = u'Croatian (?)'
     _lang_id = 0x001A
 
 
 class Czech(Language):
     ISO639_1 = 'cs'
     ISO639_2 = 'cze'
-    english_name = 'Czech'
-    native_name = u'čeština'
+    _english_name = 'Czech'
+    _native_name = u'čeština'
     _lang_id = 0x0005
 
 
 class Danish(Language):
     ISO639_1 = 'da'
     ISO639_2 = 'dan'
-    english_name = 'Danish'
-    native_name = u'dansk'
+    _english_name = 'Danish'
+    _native_name = u'dansk'
     _lang_id = 0x0006
 
 
 class Dari(Language):
     ISO639_1 = 'fa'
     ISO639_2 = 'per'
-    english_name = 'Dari'
-    native_name = u'درى'
+    _english_name = 'Dari'
+    _native_name = u'درى'
     _lang_id = 0x008C
 
 
 class Divehi(Language): # Dhivehi
     ISO639_1 = 'dv'
     ISO639_2 = 'div'
-    english_name = 'Divehi'
-    native_name = u'ދިވެހިބަސް'
+    _english_name = 'Divehi'
+    _native_name = u'ދިވެހިބަސް'
     _lang_id = 0x0065
 
 
 class Duala(Language):
     ISO639_2 = 'dua'
-    english_name = 'Duala'
-    native_name = u'Duala'
+    _english_name = 'Duala'
+    _native_name = u'Duala'
     _lang_id = 0x1000
 
 
 class Dutch(Language):
     ISO639_1 = 'nl'
     ISO639_2 = 'dut'
-    english_name = 'Dutch'
-    native_name = u'Nederlands'
+    _english_name = 'Dutch'
+    _native_name = u'Nederlands'
     _lang_id = 0x0013
 
 
 class Dzongkha(Language):
     ISO639_1 = 'dz'
     ISO639_2 = 'dzo'
-    english_name = 'Dzongkha'
-    native_name = u'རྫོང་ཁ་'
+    _english_name = 'Dzongkha'
+    _native_name = u'རྫོང་ཁ་'
     _lang_id = 0x1000
 
 
 class Embu(Language):
     ISO639_2 = 'ebu'
-    english_name = 'Embu'
-    native_name = u'Embu'
+    _english_name = 'Embu'
+    _native_name = u'Embu'
     _lang_id = 0x1000
 
 
 class English(Language):
     ISO639_1 = 'en'
     ISO639_2 = 'eng'
-    english_name = 'English'
-    native_name = u'English'
+    _english_name = 'English'
+    _native_name = u'English'
     _lang_id = 0x0009
 
 
 class Esperanto(Language):
     ISO639_1 = 'eo'
     ISO639_2 = 'epo'
-    english_name = 'Esperanto'
-    native_name = u'Esperanto'
+    _english_name = 'Esperanto'
+    _native_name = u'Esperanto'
     _lang_id = 0x1000
 
 
 class Estonian(Language):
     ISO639_1 = 'et'
     ISO639_2 = 'est'
-    english_name = 'Estonian'
-    native_name = u'eesti keel'
+    _english_name = 'Estonian'
+    _native_name = u'eesti keel'
     _lang_id = 0x0025
 
 
 class Ewe(Language):
     ISO639_1 = 'ee'
     ISO639_2 = 'ewe'
-    english_name = 'Ewe'
-    native_name = u'Èʋegbe'
+    _english_name = 'Ewe'
+    _native_name = u'Èʋegbe'
     _lang_id = 0x1000
 
 
 class Ewondo(Language):
     ISO639_2 = 'ewo'
-    english_name = 'Ewondo'
-    native_name = u'Ewondo'
+    _english_name = 'Ewondo'
+    _native_name = u'Ewondo'
     _lang_id = 0x1000
 
 
 class Faroese(Language):
     ISO639_1 = 'fo'
     ISO639_2 = 'fao'
-    english_name = 'Faroese'
-    native_name = u'føroyskt'
+    _english_name = 'Faroese'
+    _native_name = u'føroyskt'
     _lang_id = 0x0038
 
 
 class Filipino(Language):
     ISO639_2 = 'fil'
-    english_name = 'Filipino'
-    native_name = u'Filipino'
+    _english_name = 'Filipino'
+    _native_name = u'Filipino'
     _lang_id = 0x0064
 
 
 class Finnish(Language):
     ISO639_1 = 'fi'
     ISO639_2 = 'fin'
-    english_name = 'Finnish'
-    native_name = u'suomen kieli'
+    _english_name = 'Finnish'
+    _native_name = u'suomen kieli'
     _lang_id = 0x000B
 
 
 class French(Language):
     ISO639_1 = 'fr'
     ISO639_2 = 'fre'
-    english_name = 'French'
-    native_name = u'français'
+    _english_name = 'French'
+    _native_name = u'français'
     _lang_id = 0x000C
 
 
 class Frisian(Language):
     ISO639_1 = 'fy'
     ISO639_2 = 'fry'
-    english_name = 'Frisian'
-    native_name = u'Frysk'
+    _english_name = 'Frisian'
+    _native_name = u'Frysk'
     _lang_id = 0x0062
 
 
 class Friulian(Language):
     ISO639_2 = 'fur'
-    english_name = 'Friulian'
-    native_name = u'Friulian'
+    _english_name = 'Friulian'
+    _native_name = u'Friulian'
     _lang_id = 0x1000
 
 
 class Fulah(Language):
     ISO639_1 = 'ff'
     ISO639_2 = 'ful'
-    english_name = 'Fulah'
-    native_name = u'Fulfulde'
+    _english_name = 'Fulah'
+    _native_name = u'Fulfulde'
     _lang_id = 0x0067
 
 
 class FulahLatin(Language):
     ISO639_3 = 'ff-Latn'
-    english_name = 'Fulah (Latin)'
-    native_name = u'Pular'
+    _english_name = 'Fulah (Latin)'
+    _native_name = u'Pular'
     _lang_id = 0x7C67
 
 
 class Galician(Language):
     ISO639_1 = 'gl'
     ISO639_2 = 'glg'
-    english_name = 'Galician'
-    native_name = u'galego'
+    _english_name = 'Galician'
+    _native_name = u'galego'
     _lang_id = 0x1000
 
 
 class Ganda(Language):
     ISO639_1 = 'lg'
     ISO639_2 = 'lug'
-    english_name = 'Ganda'
-    native_name = u'Luganda'
+    _english_name = 'Ganda'
+    _native_name = u'Luganda'
     _lang_id = 0x1000
 
 
 class Georgian(Language):
     ISO639_1 = 'ka'
     ISO639_2 = 'geo'
-    english_name = 'Georgian'
-    native_name = u'ქართული'
+    _english_name = 'Georgian'
+    _native_name = u'ქართული'
     _lang_id = 0x0037
 
 
 class German(Language):
     ISO639_1 = 'de'
     ISO639_2 = 'ger'
-    english_name = 'German'
-    native_name = u'Deutsch'
+    _english_name = 'German'
+    _native_name = u'Deutsch'
     _lang_id = 0x0007
 
 
 class Greek(Language):
     ISO639_1 = 'el'
     ISO639_2 = 'gre'
-    english_name = 'Greek'
-    native_name = u'Νέα Ελληνικά'
+    _english_name = 'Greek'
+    _native_name = u'Νέα Ελληνικά'
     _lang_id = 0x0008
 
 
 class Guarani(Language):
     ISO639_1 = 'gn'
     ISO639_2 = 'grn'
-    english_name = 'Guarani'
-    native_name = u'Avañe\'ẽ'
+    _english_name = 'Guarani'
+    _native_name = u'Avañe\'ẽ'
     _lang_id = 0x0074
 
 
 class Gujarati(Language):
     ISO639_1 = 'gu'
     ISO639_2 = 'guj'
-    english_name = 'Gujarati'
-    native_name = u'ગુજરાતી'
+    _english_name = 'Gujarati'
+    _native_name = u'ગુજરાતી'
 
 
 class Gusii(Language):
     ISO639_2 = 'guz'
-    english_name = 'Gusii'
-    native_name = u'Gusii'
+    _english_name = 'Gusii'
+    _native_name = u'Gusii'
     _lang_id = 0x1000
 
 
 class HaitianCreole(Language):
     ISO639_1 = 'ht'
     ISO639_2 = 'hat'
-    english_name = 'Haitian Creole'
-    native_name = u'kreyòl ayisyen'
+    _english_name = 'Haitian Creole'
+    _native_name = u'kreyòl ayisyen'
 
 
 class Hausa(Language):
     ISO639_1 = 'ha'
     ISO639_2 = 'hau'
-    english_name = 'Hausa'
-    native_name = u'هَرْشَن'
+    _english_name = 'Hausa'
+    _native_name = u'هَرْشَن'
     _lang_id = 0x0068
 
 
@@ -3411,196 +3441,196 @@ class HausaLatin(Language):
     ISO639_1 = 'ha'
     ISO639_2 = 'hau'
     ISO639_3 = 'ha-Latn'
-    english_name = 'Hausa (Latin)'
-    native_name = u'Harshen'
+    _english_name = 'Hausa (Latin)'
+    _native_name = u'Harshen'
     _lang_id = 0x7C68
 
 
 class Hawaiian(Language):
     ISO639_2 = 'haw'
-    english_name = 'Hawaiian'
-    native_name = u'ʻŌlelo Hawaiʻi'
+    _english_name = 'Hawaiian'
+    _native_name = u'ʻŌlelo Hawaiʻi'
     _lang_id = 0x0075
 
 
 class Hebrew(Language):
     ISO639_1 = 'he'
     ISO639_2 = 'heb'
-    english_name = 'Hebrew'
-    native_name = u'עברית'
+    _english_name = 'Hebrew'
+    _native_name = u'עברית'
     _lang_id = 0x000D
 
 
 class Hindi(Language):
     ISO639_1 = 'hi'
     ISO639_2 = 'hin'
-    english_name = 'Hindi'
-    native_name = u'हिन्दी'
+    _english_name = 'Hindi'
+    _native_name = u'हिन्दी'
     _lang_id = 0x0039
 
 
 class HiriMotu(Language):
     ISO639_1 = 'ho'
     ISO639_2 = 'hmo'
-    english_name = 'Hiri Motu'
-    native_name = u'Hiri Motu'
+    _english_name = 'Hiri Motu'
+    _native_name = u'Hiri Motu'
 
 
 class Hungarian(Language):
     ISO639_1 = 'hu'
     ISO639_2 = 'hun'
-    english_name = 'Hungarian'
-    native_name = u'magyar nyelv'
+    _english_name = 'Hungarian'
+    _native_name = u'magyar nyelv'
     _lang_id = 0x000E
 
 
 class Icelandic(Language):
     ISO639_1 = 'is'
     ISO639_2 = 'ice'
-    english_name = 'Icelandic'
-    native_name = u'íslenska'
+    _english_name = 'Icelandic'
+    _native_name = u'íslenska'
     _lang_id = 0x000F
 
 
 class Igbo(Language):
     ISO639_1 = 'ig'
     ISO639_2 = 'ibo'
-    english_name = 'Igbo'
-    native_name = u'Asụsụ Igbo'
+    _english_name = 'Igbo'
+    _native_name = u'Asụsụ Igbo'
     _lang_id = 0x0070
 
 
 class Indonesian(Language):
     ISO639_1 = 'id'
     ISO639_2 = 'ind'
-    english_name = 'Indonesian'
+    _english_name = 'Indonesian'
     natiive_name = u'bahasa Indonesia'
     _lang_id = 0x0021
 
 
 class Interlingua(Language):
     ISO639_1 = 'ia'
-    english_name = 'Interlingua'
-    native_name = u'Interlingua'
+    _english_name = 'Interlingua'
+    _native_name = u'Interlingua'
     _lang_id = 0x1000
 
 
 class Inuktitut(Language):
     ISO639_1 = 'iu'
     ISO639_2 = 'iku'
-    english_name = 'Inuktitut'
-    native_name = u'ᐃᓄᒃᑎᑐᑦ'
+    _english_name = 'Inuktitut'
+    _native_name = u'ᐃᓄᒃᑎᑐᑦ'
     _lang_id = 0x005D
 
 
 class InuktitutLatin(Language):
     ISO639_3 = 'iu-Latn'
-    english_name = 'Inuktitut (Latin)'
-    native_name = u'Inuktitut (Latin)'
+    _english_name = 'Inuktitut (Latin)'
+    _native_name = u'Inuktitut (Latin)'
     _lang_id = 0x7C5D
 
 
 class InuktitutSyllabics(Language):
     ISO639_3 = 'iu-Cans'
-    english_name = 'Inuktitut (Syllabics)'
-    native_name = u'Inuktitut (Syllabics)'
+    _english_name = 'Inuktitut (Syllabics)'
+    _native_name = u'Inuktitut (Syllabics)'
     _lang_id = 0x785D
 
 
 class Irish(Language):
     ISO639_1 = 'ga'
     ISO639_2 = 'gle'
-    english_name = 'Irish'
-    native_name = u'Gaeilge'
+    _english_name = 'Irish'
+    _native_name = u'Gaeilge'
     _lang_id = 0x003C
 
 
 class Italian(Language):
     ISO639_1 = 'it'
     ISO639_2 = 'ita'
-    english_name = 'Italian'
-    native_name = u'italiano'
+    _english_name = 'Italian'
+    _native_name = u'italiano'
     _lang_id = 0x0010
 
 
 class Japanese(Language):
     ISO639_1 = 'ja'
     ISO639_2 = 'jpn'
-    english_name = 'Japanese'
-    native_name = u'日本語'
+    _english_name = 'Japanese'
+    _native_name = u'日本語'
     _lang_id = 0x0011
 
 
 class Javanese(Language):
     ISO639_1 = 'jv'
     ISO639_2 = 'jav'
-    english_name = 'Javanese'
-    native_name = u'ꦧꦱꦗꦮ'
+    _english_name = 'Javanese'
+    _native_name = u'ꦧꦱꦗꦮ'
     _lang_id = 0x1000
 
 
 class JavaneseLatin(Language):
     ISO639_3 = 'jv-Latn'
-    english_name = 'Javanese (Latin)'
-    native_name = u'Javanese (Latin)'
+    _english_name = 'Javanese (Latin)'
+    _native_name = u'Javanese (Latin)'
     _lang_id = 0x1000
 
 
 class JolaFonyi(Language):
     ISO639_2 = 'dyo'
-    english_name = 'Jola-Fonyi'
-    native_name = u'Jola-Fonyi'
+    _english_name = 'Jola-Fonyi'
+    _native_name = u'Jola-Fonyi'
     _lang_id = 0x1000
 
 
 class Kabuverdianu(Language):
     ISO639_2 = 'kea'
-    english_name = 'Kabuverdianu'
-    native_name = u'Kabuverdianu'
+    _english_name = 'Kabuverdianu'
+    _native_name = u'Kabuverdianu'
     _lang_id = 0x1000
 
 
 class Kabyle(Language):
     ISO639_2 = 'kab'
-    english_name = 'Kabyle'
-    native_name = u'Tamaziɣt Taqbaylit'
+    _english_name = 'Kabyle'
+    _native_name = u'Tamaziɣt Taqbaylit'
     _lang_id = 0x1000
 
 
 class Kako(Language):
     ISO639_2 = 'kkj'
-    english_name = 'Kako'
-    native_name = u'Kako'
+    _english_name = 'Kako'
+    _native_name = u'Kako'
     _lang_id = 0x1000
 
 
 class Kalenjin(Language):
     ISO639_2 = 'kln'
-    english_name = 'Kalenjin'
-    native_name = u'Kalenjin'
+    _english_name = 'Kalenjin'
+    _native_name = u'Kalenjin'
     _lang_id = 0x1000
 
 
 class Kamba(Language):
     ISO639_2 = 'kam'
-    english_name = 'Kamba'
-    native_name = u'Kamba'
+    _english_name = 'Kamba'
+    _native_name = u'Kamba'
     _lang_id = 0x1000
 
 
 class Kannada(Language):
     ISO639_1 = 'kn'
     ISO639_2 = 'kan'
-    english_name = 'Kannada'
-    native_name = u'ಕನ್ನಡ'
+    _english_name = 'Kannada'
+    _native_name = u'ಕನ್ನಡ'
     _lang_id = 0x004B
 
 
 class Kashmiri(Language):
     ISO639_1 = 'ks'
     ISO639_2 = 'kas'
-    english_name = 'Kashmiri'
-    native_name = u'कॉशुर'
+    _english_name = 'Kashmiri'
+    _native_name = u'कॉशुर'
     _lang_id = 0x0060
 
 
@@ -3608,338 +3638,338 @@ class KashmiriArab(Language):
     ISO639_1 = 'ks'
     ISO639_2 = 'kas'
     ISO639_3 = 'ks-Arab'
-    english_name = 'Kashmiri (Arab)'
-    native_name = u'كأشُر'
+    _english_name = 'Kashmiri (Arab)'
+    _native_name = u'كأشُر'
     _lang_id = 0x0460
 
 
 class Kazakh(Language):
     ISO639_1 = 'kk'
     ISO639_2 = 'kaz'
-    english_name = 'Kazakh'
-    native_name = u'қазақ тілі'
+    _english_name = 'Kazakh'
+    _native_name = u'қазақ тілі'
     _lang_id = 0x003F
 
 
 class Khmer(Language):
     ISO639_1 = 'km'
     ISO639_2 = 'khm'
-    english_name = 'Khmer'
-    native_name = u'ភាសាខ្មែរ'
+    _english_name = 'Khmer'
+    _native_name = u'ភាសាខ្មែរ'
     _lang_id = 0x0053
 
 
 class Kiche(Language):
     ISO639_2 = 'quc'
     ISO639_3 = 'quc-Latn'
-    english_name = 'K\'iche'
-    native_name = u'Qatzijob\'al'
+    _english_name = 'K\'iche'
+    _native_name = u'Qatzijob\'al'
     _lang_id = 0x0086
 
 
 class Kikuyu(Language):
     ISO639_1 = 'ki'
     ISO639_2 = 'kik'
-    english_name = 'Kikuyu'
-    native_name = u'Gĩkũyũ'
+    _english_name = 'Kikuyu'
+    _native_name = u'Gĩkũyũ'
     _lang_id = 0x1000
 
 
 class Kinyarwanda(Language):
     ISO639_1 = 'rw'
     ISO639_2 = 'kin'
-    english_name = 'Kinyarwanda'
-    native_name = u'Kinyarwanda'
+    _english_name = 'Kinyarwanda'
+    _native_name = u'Kinyarwanda'
     _lang_id = 0x0087
 
 
 class Konkani(Language):
     ISO639_2 = 'kok'
-    english_name = 'Konkani'
-    native_name = u'कोंकणी'
+    _english_name = 'Konkani'
+    _native_name = u'कोंकणी'
     _lang_id = 0x0057
 
 
 class Kalaallisut(Language):
     ISO639_1 = 'kl'
     ISO639_2 = 'kal'
-    english_name = 'Kalaallisut'
-    native_name = u'Kalaallisut'
+    _english_name = 'Kalaallisut'
+    _native_name = u'Kalaallisut'
     _lang_id = 0x006F
 
 
 class KaraKalpak(Language):
     ISO639_2 = 'kaa'
-    english_name = 'Karakalpak'
-    native_name = u'Қарақалпақ тили'
+    _english_name = 'Karakalpak'
+    _native_name = u'Қарақалпақ тили'
 
 
 class Korean(Language):
     ISO639_1 = 'ko'
     ISO639_2 = 'kor'
-    english_name = 'Korean'
-    native_name = u'한국어'
+    _english_name = 'Korean'
+    _native_name = u'한국어'
     _lang_id = 0x0012
 
 
 class KoyraChiini(Language):
     ISO639_2 = 'khq'
-    english_name = 'Koyra Chiini'
-    native_name = u'Koyra Chiini'
+    _english_name = 'Koyra Chiini'
+    _native_name = u'Koyra Chiini'
     _lang_id = 0x1000
 
 
 class KoyraboroSenni(Language):
     ISO639_2 = 'ses'
-    english_name = 'Koyraboro Senni'
-    native_name = u'Koyraboro Senni'
+    _english_name = 'Koyraboro Senni'
+    _native_name = u'Koyraboro Senni'
     _lang_id = 0x1000
 
 
 class Kurdish(Language):
     ISO639_1 = 'ku'
     ISO639_2 = 'kur'
-    english_name = 'Kurdish'
-    native_name = u'کوردی'
+    _english_name = 'Kurdish'
+    _native_name = u'کوردی'
 
 
 class Kwasio(Language):
     ISO639_2 = 'nmg'
-    english_name = 'Kwasio'
-    native_name = u'Kwasio'
+    _english_name = 'Kwasio'
+    _native_name = u'Kwasio'
     _lang_id = 0x1000
 
 
 class Kyrgyz(Language):
     ISO639_1 = 'ky'
     ISO639_2 = 'kir'
-    english_name = 'Kyrgyz'
-    native_name = u'кыргыз тили'
+    _english_name = 'Kyrgyz'
+    _native_name = u'кыргыз тили'
     _lang_id = 0x0040
 
 
 class Lakota(Language):
     ISO639_2 = 'lkt'
-    english_name = 'Lakota'
-    native_name = u'Lakota'
+    _english_name = 'Lakota'
+    _native_name = u'Lakota'
     _lang_id = 0x1000
 
 
 class Langi(Language):
     ISO639_2 = 'lag'
-    english_name = 'Langi'
-    native_name = u'Langi'
+    _english_name = 'Langi'
+    _native_name = u'Langi'
     _lang_id = 0x1000
 
 
 class Lao(Language):
     ISO639_1 = 'lo'
     ISO639_2 = 'lao'
-    english_name = 'Lao'
-    native_name = u'ພາສາລາວ'
+    _english_name = 'Lao'
+    _native_name = u'ພາສາລາວ'
     _lang_id = 0x0054
 
 
 class Latvian(Language):
     ISO639_1 = 'lv'
     ISO639_2 = 'lav'
-    english_name = 'Latvian'
-    native_name = u'Latviešu valoda'
+    _english_name = 'Latvian'
+    _native_name = u'Latviešu valoda'
     _lang_id = 0x0026
 
 
 class Lingala(Language):
     ISO639_1 = 'ln'
     ISO639_2 = 'lin'
-    english_name = 'Lingala'
-    native_name = u'Lingala'
+    _english_name = 'Lingala'
+    _native_name = u'Lingala'
     _lang_id = 0x1000
 
 
 class Lithuanian(Language):
     ISO639_1 = 'lt'
     ISO639_2 = 'lit'
-    english_name = 'Lithuanian'
-    native_name = u'lietuvių kalba'
+    _english_name = 'Lithuanian'
+    _native_name = u'lietuvių kalba'
     _lang_id = 0x0027
 
 
 class LowGerman(Language):
     ISO639_2 = 'nds'
-    english_name = 'Low German'
-    native_name = u'Plattdütsch'
+    _english_name = 'Low German'
+    _native_name = u'Plattdütsch'
     _lang_id = 0x1000
 
 
 class LowerSorbian(Language):
     ISO639_2 = 'dsb'
-    english_name = 'Lower Sorbian'
-    native_name = u'Dolnoserbšćina'
+    _english_name = 'Lower Sorbian'
+    _native_name = u'Dolnoserbšćina'
     _lang_id = 0x7C2E
 
 
 class LubaKatanga(Language):
     ISO639_1 = 'lu'
     ISO639_2 = 'lub'
-    english_name = 'Luba-Katanga'
-    native_name = u'Kiluba'
+    _english_name = 'Luba-Katanga'
+    _native_name = u'Kiluba'
     _lang_id = 0x1000
 
 
 class Luo(Language):
     ISO639_2 = 'luo'
-    english_name = 'Luo'
-    native_name = u'Dholuo'
+    _english_name = 'Luo'
+    _native_name = u'Dholuo'
     _lang_id = 0x1000
 
 
 class Luxembourgish(Language):
     ISO639_1 = 'lb'
     ISO639_2 = 'ltz'
-    english_name = 'Luxembourgish'
-    native_name = u'Lëtzebuergesch'
+    _english_name = 'Luxembourgish'
+    _native_name = u'Lëtzebuergesch'
     _lang_id = 0x006E
 
 
 class Luyia(Language):
     ISO639_2 = 'luy'
-    english_name = 'Luyia'
-    native_name = u'Luyia'
+    _english_name = 'Luyia'
+    _native_name = u'Luyia'
     _lang_id = 0x1000
 
 
 class Macedonian(Language):
     ISO639_1 = 'mk'
     ISO639_2 = 'mac'
-    english_name = 'Macedonian'
-    native_name = u'македонски јазик'
+    _english_name = 'Macedonian'
+    _native_name = u'македонски јазик'
     _lang_id = 0x002F
 
 
 class Machame(Language):
     ISO639_2 = 'jmc'
-    english_name = 'Machame'
-    native_name = u'Machame'
+    _english_name = 'Machame'
+    _native_name = u'Machame'
     _lang_id = 0x1000
 
 
 class MakhuwaMeetto(Language):
     ISO639_2 = 'mgh'
-    english_name = 'Makhuwa-Meetto'
-    native_name = u'Makhuwa-Meetto'
+    _english_name = 'Makhuwa-Meetto'
+    _native_name = u'Makhuwa-Meetto'
     _lang_id = 0x1000
 
 
 class Makonde(Language):
     ISO639_2 = 'kde'
-    english_name = 'Makonde'
-    native_name = u'Makonde'
+    _english_name = 'Makonde'
+    _native_name = u'Makonde'
     _lang_id = 0x1000
 
 
 class Malagasy(Language):
     ISO639_1 = 'mg'
     ISO639_2 = 'mlg'
-    english_name = 'Malagasy'
-    native_name = u'Malagasy'
+    _english_name = 'Malagasy'
+    _native_name = u'Malagasy'
     _lang_id = 0x1000
 
 
 class Malay(Language):
     ISO639_1 = 'ms'
     ISO639_2 = 'may'
-    english_name = 'Malay'
-    native_name = u'Bahasa Melayu'
+    _english_name = 'Malay'
+    _native_name = u'Bahasa Melayu'
     _lang_id = 0x003E
 
 
 class Malayalam(Language):
     ISO639_1 = 'ml'
     ISO639_2 = 'mal'
-    english_name = 'Malayalam'
-    native_name = u'മലയാളം'
+    _english_name = 'Malayalam'
+    _native_name = u'മലയാളം'
     _lang_id = 0x004C
 
 
 class Maltese(Language):
     ISO639_1 = 'mt'
     ISO639_2 = 'mlt'
-    english_name = 'Maltese'
-    native_name = u'Malti'
+    _english_name = 'Maltese'
+    _native_name = u'Malti'
     _lang_id = 0x003A
 
 
 class Manx(Language):
     ISO639_1 = 'gv'
-    english_name = 'Manx'
-    native_name = u'Gaelg'
+    _english_name = 'Manx'
+    _native_name = u'Gaelg'
     _lang_id = 0x1000
 
 
 class Maori(Language):
     ISO639_1 = 'mi'
     ISO639_2 = 'mao'
-    english_name = 'Maori'
-    native_name = u'Te Reo Māori'
+    _english_name = 'Maori'
+    _native_name = u'Te Reo Māori'
     _lang_id = 0x0081
 
 
 class Marathi(Language):
     ISO639_1 = 'mr'
     ISO639_2 = 'mar'
-    english_name = 'Marathi'
-    native_name = u'मराठी'
+    _english_name = 'Marathi'
+    _native_name = u'मराठी'
     _lang_id = 0x004E
 
 
 class Mapudungun(Language):
     ISO639_2 = 'arn'
-    english_name = 'Mapudungun'
-    native_name = u'Mapudungun'
+    _english_name = 'Mapudungun'
+    _native_name = u'Mapudungun'
     _lang_id = 0x007A
 
 
 class Masai(Language):
     ISO639_2 = 'mas'
-    english_name = 'Masai'
-    native_name = u'ɔl'
+    _english_name = 'Masai'
+    _native_name = u'ɔl'
     _lang_id = 0x1000
 
 
 class Mazanderani(Language):
     ISO639_2 = 'mzn'
-    english_name = 'Mazanderani'
-    native_name = u'Mazanderani'
+    _english_name = 'Mazanderani'
+    _native_name = u'Mazanderani'
     _lang_id = 0x1000
 
 
 class Meru(Language):
     ISO639_1 = 'ml'
     ISO639_2 = 'mer'
-    english_name = 'Meru'
-    native_name = u'Meru'
+    _english_name = 'Meru'
+    _native_name = u'Meru'
     _lang_id = 0x1000
 
 
 class Meta(Language):
     ISO639_2 = 'mgo'
-    english_name = 'Meta\''
-    native_name = u'Meta\''
+    _english_name = 'Meta\''
+    _native_name = u'Meta\''
     _lang_id = 0x1000
 
 
 class Mohawk(Language):
     ISO639_2 = 'moh'
-    english_name = 'Mohawk'
-    native_name = u'Kanien’kéha'
+    _english_name = 'Mohawk'
+    _native_name = u'Kanien’kéha'
     _lang_id = 0x007C
 
 
 class Mongolian(Language):
     ISO639_1 = 'mn'
     ISO639_2 = 'mon'
-    english_name = 'Mongolian'
-    native_name = u'ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ'
+    _english_name = 'Mongolian'
+    _native_name = u'ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ'
     _lang_id = 0x0050
 
 
@@ -3947,8 +3977,8 @@ class MongolianCyrillic(Language):
     ISO639_1 = 'mn'
     ISO639_2 = 'mon'
     ISO639_3 = 'mn-Cryl'
-    english_name = 'Mongolian (Cyrillic)'
-    native_name = u'монгол хэл'
+    _english_name = 'Mongolian (Cyrillic)'
+    _native_name = u'монгол хэл'
     _lang_id = 0x7850
 
 
@@ -3956,438 +3986,438 @@ class MongolianTraditional(Language):
     ISO639_1 = 'mn'
     ISO639_2 = 'mon'
     ISO639_3 = 'mn-Mong'
-    english_name = 'Mongolian (Traditional)'
-    native_name = u'ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ'
+    _english_name = 'Mongolian (Traditional)'
+    _native_name = u'ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡ'
     _lang_id = 0x7C50
 
 
 class Morisyen(Language):
     ISO639_2 = 'mfe'
-    english_name = 'Morisyen'
-    native_name = u'Kreol morisien'
+    _english_name = 'Morisyen'
+    _native_name = u'Kreol morisien'
     _lang_id = 0x1000
 
 
 class Marshallese(Language):
     ISO639_1 = 'mh'
     ISO639_2 = 'mah'
-    english_name = 'Marshallese'
-    native_name = u'Kajin M̧ajeļ'
+    _english_name = 'Marshallese'
+    _native_name = u'Kajin M̧ajeļ'
 
 
 class Mundang(Language):
     ISO639_2 = 'mua'
-    english_name = 'Mundang'
-    native_name = u'Mundang'
+    _english_name = 'Mundang'
+    _native_name = u'Mundang'
     _lang_id = 0x1000
 
 
 class Nauru(Language):
     ISO639_1 = 'na'
     ISO639_2 = 'nau'
-    english_name = 'Nauru'
-    native_name = u'dorerin Naoero'
+    _english_name = 'Nauru'
+    _native_name = u'dorerin Naoero'
 
 
 class Nko(Language):
     ISO639_2 = 'nqo'
-    english_name = 'N\'ko'
-    native_name = u'N\'ko'
+    _english_name = 'N\'ko'
+    _native_name = u'N\'ko'
     _lang_id = 0x1000
 
 
 class Nama(Language):
     ISO639_2 = 'naq'
-    english_name = 'Nama'
-    native_name = u'Nama'
+    _english_name = 'Nama'
+    _native_name = u'Nama'
     _lang_id = 0x1000
 
 
 class Nepali(Language):
     ISO639_1 = 'ne'
     ISO639_2 = 'nep'
-    english_name = 'Nepali'
-    native_name = u'नेपाली भाषा'
+    _english_name = 'Nepali'
+    _native_name = u'नेपाली भाषा'
     _lang_id = 0x0061
 
 
 class Ngiemboon(Language):
     ISO639_2 = 'nnh'
-    english_name = 'Ngiemboon'
-    native_name = u'Ngiemboon'
+    _english_name = 'Ngiemboon'
+    _native_name = u'Ngiemboon'
     _lang_id = 0x1000
 
 
 class Ngomba(Language):
     ISO639_2 = 'jgo'
-    english_name = 'Ngomba'
-    native_name = u'Ngomba'
+    _english_name = 'Ngomba'
+    _native_name = u'Ngomba'
     _lang_id = 0x1000
 
 
 class NorthernLuri(Language):
     ISO639_2 = 'irc'
-    english_name = 'Northern Luri'
-    native_name = u'Northern Luri'
+    _english_name = 'Northern Luri'
+    _native_name = u'Northern Luri'
     _lang_id = 0x1000
 
 
 class NorthNdebele(Language):
     ISO639_1 = 'nd'
     ISO639_2 = 'nde'
-    english_name = 'North Ndebele'
-    native_name = u'saseNyakatho'
+    _english_name = 'North Ndebele'
+    _native_name = u'saseNyakatho'
     _lang_id = 0x1000
 
 
 class NorthFrisian(Language):
     ISO639_2 = 'frr'
-    english_name = 'North Frisian'
-    native_name = u'Frasch'
+    _english_name = 'North Frisian'
+    _native_name = u'Frasch'
 
 
 class Norwegian(Language):
     ISO639_1 = 'no'
     ISO639_2 = 'nor'
-    english_name = 'Norwegian'
-    native_name = u'norsk'
+    _english_name = 'Norwegian'
+    _native_name = u'norsk'
     _lang_id = 0x0014
 
 
 class NorwegianNynorsk(Language):
     ISO639_1 = 'nn'
     ISO639_2 = 'nno'
-    english_name = 'Norwegian (Nynorsk)'
-    native_name = u'nynorsk'
+    _english_name = 'Norwegian (Nynorsk)'
+    _native_name = u'nynorsk'
     _lang_iid = 0x7814
 
 
 class NorwegianBokmal(Language):
     ISO639_1 = 'nb'
     ISO639_2 = 'nob'
-    english_name = 'Norwegian (Bokmal)'
-    native_name = u'bokmål'
+    _english_name = 'Norwegian (Bokmal)'
+    _native_name = u'bokmål'
     _lang_id = 0x7C14
 
 
 class Niuean(Language):
     ISO639_2 = 'niu'
-    english_name = 'Niuean'
-    native_name = u'ko e vagahau Niuē'
+    _english_name = 'Niuean'
+    _native_name = u'ko e vagahau Niuē'
 
 
 class Nuer(Language):
     ISO639_2 = 'nus'
-    english_name = 'Nuer'
-    native_name = u'Nuer'
+    _english_name = 'Nuer'
+    _native_name = u'Nuer'
     _lang_id = 0x1000
 
 
 class Nyanja(Language):
     ISO639_1 = 'ny'
     ISO639_2 = 'nya'
-    english_name = 'Nyanja'
-    native_name = u'chiCheŵa'
+    _english_name = 'Nyanja'
+    _native_name = u'chiCheŵa'
 
 
 class Nyankole(Language):
     ISO639_2 = 'nyn'
-    english_name = 'Nyankole'
-    native_name = u'Nyankole'
+    _english_name = 'Nyankole'
+    _native_name = u'Nyankole'
     _lang_id = 0x1000
 
 
 class Occitan(Language):
     ISO639_1 = 'oc'
     ISO639_2 = 'oci'
-    english_name = 'Occitan'
-    native_name = u'lenga d\'òc'
+    _english_name = 'Occitan'
+    _native_name = u'lenga d\'òc'
     _lang_id = 0x0082
 
 
 class Oriya(Language):
     ISO639_1 = 'or'
     ISO639_2 = 'ori'
-    english_name = 'Oriya'
-    native_name = u'ଓଡ଼ିଆ'
+    _english_name = 'Oriya'
+    _native_name = u'ଓଡ଼ିଆ'
     _lang_id = 0x0048
 
 
 class Oromo(Language):
     ISO639_1 = 'om'
     ISO639_2 = 'orm'
-    english_name = 'Oromo'
-    native_name = u'Afaan Oromoo'
+    _english_name = 'Oromo'
+    _native_name = u'Afaan Oromoo'
     _lang_id = 0x0072
 
 
 class Ossetian(Language):
     ISO639_1 = 'os'
     ISO639_2 = 'oss'
-    english_name = 'Ossetian'
-    native_name = u'Ирон æвзаг'
+    _english_name = 'Ossetian'
+    _native_name = u'Ирон æвзаг'
     _lang_id = 0x1000
 
 
 class Papiamento(Language):
     ISO639_2 = 'pap'
-    english_name = 'Papiamento'
-    native_name = u'Papiamentu'
+    _english_name = 'Papiamento'
+    _native_name = u'Papiamentu'
 
 
 class Palauan(Language):
     ISO639_2 = 'pau'
-    english_name = 'Palauan'
-    native_name = u'a tekoi er a Belau'
+    _english_name = 'Palauan'
+    _native_name = u'a tekoi er a Belau'
 
 
 class Pashto(Language):
     ISO639_1 = 'ps'
     ISO639_2 = 'pus'
-    english_name = 'Pashto'
-    native_name = u'پښتو'
+    _english_name = 'Pashto'
+    _native_name = u'پښتو'
     _lang_id = 0x0063
 
 
 class Persian(Language):
     ISO639_1 = 'fa'
     ISO639_2 = 'fas'
-    english_name = 'Persian'
-    native_name = u'فارسی'
+    _english_name = 'Persian'
+    _native_name = u'فارسی'
     _lang_id = 0x0029
 
 
 class PitcairnNorfolk(Language):
     ISO639_2 = 'pih'
-    english_name = 'Pitcairn-Norfolk'
-    native_name = u'Norfuk'
+    _english_name = 'Pitcairn-Norfolk'
+    _native_name = u'Norfuk'
 
 
 class Polish(Language):
     ISO639_1 = 'pl'
     ISO639_2 = 'pol'
-    english_name = 'Polish'
-    native_name = u'Język polski'
+    _english_name = 'Polish'
+    _native_name = u'Język polski'
     _lang_id = 0x0015
 
 
 class Portuguese(Language):
     ISO639_1 = 'pt'
     ISO639_2 = 'por'
-    english_name = 'Portuguese'
-    native_name = u'português'
+    _english_name = 'Portuguese'
+    _native_name = u'português'
     _lang_id = 0x0016
 
 
 class Prussian(Language):
     ISO639_3 = 'prg-001'
-    english_name = 'Prussian'
-    native_name = u'Prussian'
+    _english_name = 'Prussian'
+    _native_name = u'Prussian'
     _lang_id = 0x1000
 
 
 class Punjabi(Language):
     ISO639_1 = 'pa'
     ISO639_2 = 'pan'
-    english_name = 'Punjabi'
-    native_name = u'ਪੰਜਾਬੀ'
+    _english_name = 'Punjabi'
+    _native_name = u'ਪੰਜਾਬੀ'
     _lang_id = 0x0046
 
 
 class PunjabiArabic(Language):
     ISO639_1 = 'pa'
     ISO639_2 = 'pan'
-    english_name = 'Punjabi (Arabic)'
-    native_name = u'پنجابی'
+    _english_name = 'Punjabi (Arabic)'
+    _native_name = u'پنجابی'
     _lang_id = 0x7C46
 
 
 class Quechua(Language):
     ISO639_1 = 'qu'
     ISO639_2 = 'que'
-    english_name = 'Quechua'
-    native_name = u'Runa simi'
+    _english_name = 'Quechua'
+    _native_name = u'Runa simi'
     lang_id = 0x006B
 
 
 class Ripuarian(Language):
     ISO639_2 = 'ksh'
-    english_name = 'Ripuarian'
-    native_name = u'Ripuarian'
+    _english_name = 'Ripuarian'
+    _native_name = u'Ripuarian'
     lang_id = 0x1000
 
 
 class Rarotongan(Language):
     ISO639_2 = 'rar'
-    english_name = 'Rarotongan'
-    native_name = u'Māori Kūki \'Āirani'
+    _english_name = 'Rarotongan'
+    _native_name = u'Māori Kūki \'Āirani'
 
 
 class Romani(Language):
     ISO639_2 = 'rom'
-    english_name = 'Romani'
-    native_name = u'romani čhib'
+    _english_name = 'Romani'
+    _native_name = u'romani čhib'
 
 
 class Romanian(Language):
     ISO639_1 = 'ro'
     ISO639_2 = 'rum'
-    english_name = 'Romanian'
-    native_name = u'limba română'
+    _english_name = 'Romanian'
+    _native_name = u'limba română'
     _lang_id = 0x0018
 
 
 class Romansh(Language):
     ISO639_1 = 'rm'
     ISO639_2 = 'roh'
-    english_name = 'Romansh'
-    native_name = u'Rumàntsch'
+    _english_name = 'Romansh'
+    _native_name = u'Rumàntsch'
     _lang_id = 0x0017
 
 
 class Rombo(Language):
     ISO639_2 = 'rof'
-    english_name = 'Rombo'
-    native_name = u'Rombo'
+    _english_name = 'Rombo'
+    _native_name = u'Rombo'
     _lang_id = 0x1000
 
 
 class Rundi(Language):
     ISO639_1 = 'rn'
     ISO639_2 = 'run'
-    english_name = 'Rundi'
-    native_name = u'Ikirundi'
+    _english_name = 'Rundi'
+    _native_name = u'Ikirundi'
     _lang_id = 0x1000
 
 
 class Russian(Language):
     ISO639_1 = 'ru'
     ISO639_2 = 'rus'
-    english_name = 'Russian'
-    native_name = u'русский язык'
+    _english_name = 'Russian'
+    _native_name = u'русский язык'
     _lang_id = 0x0019
 
 
 class Rwa(Language):
     ISO639_2 = 'rwk'
-    english_name = 'Rwa'
-    native_name = u'Rwa'
+    _english_name = 'Rwa'
+    _native_name = u'Rwa'
     _lang_id = 0x1000
 
 
 class Saho(Language):
     ISO639_2 = 'ssy'
-    english_name = 'Saho'
-    native_name = u'Saho'
+    _english_name = 'Saho'
+    _native_name = u'Saho'
     _lang_id = 0x1000
 
 
 class Yakut(Language):
     ISO639_2 = 'sah'
-    english_name = 'Yakut'
-    native_name = u'Сахалыы'
+    _english_name = 'Yakut'
+    _native_name = u'Сахалыы'
     _lang_id = 0x0085
 
 
 class Samburu(Language):
     ISO639_2 = 'saq'
-    english_name = 'Samburu'
-    native_name = u'Samburu'
+    _english_name = 'Samburu'
+    _native_name = u'Samburu'
     _lang_id = 0x1000
 
 
 class SamiInari(Language):
     ISO639_2 = 'smn'
-    english_name = 'Inari Sami'
-    native_name = u'anarâškielâ'
+    _english_name = 'Inari Sami'
+    _native_name = u'anarâškielâ'
     _lang_id = 0x703B
 
 
 class SamiLule(Language):
     ISO639_2 = 'smj'
-    english_name = 'Lule Sami'
-    native_name = u'julevsámegiella'
+    _english_name = 'Lule Sami'
+    _native_name = u'julevsámegiella'
     _lang_id = 0x7C3B
 
 
 class SamiNorthern(Language):
     ISO639_1 = 'se'
     ISO639_2 = 'sme'
-    english_name = 'Northern Sami'
-    native_name = u'davvisámegiella'
+    _english_name = 'Northern Sami'
+    _native_name = u'davvisámegiella'
     _lang_id = 0x003B
 
 
 class SamiSkolt(Language):
     ISO639_2 = 'sms'
-    english_name = 'Skolt Sami'
-    native_name = u'sääʹmǩiõll'
+    _english_name = 'Skolt Sami'
+    _native_name = u'sääʹmǩiõll'
     _lang_id = 0x743B
 
 
 class SamiSouthern(Language):
     ISO639_2 = 'sma'
-    english_name = 'Southern Sami'
-    native_name = u'Åarjelsaemien gïele'
+    _english_name = 'Southern Sami'
+    _native_name = u'Åarjelsaemien gïele'
     _lang_id = 0x783B
 
 
 class Samoan(Language):
     ISO639_1 = 'sm'
     ISO639_2 = 'smo'
-    english_name = 'Samoan'
-    native_name = u'Gagana faʻa Sāmoa'
+    _english_name = 'Samoan'
+    _native_name = u'Gagana faʻa Sāmoa'
 
 
 class Sango(Language):
     ISO639_1 = 'sg'
     ISO639_2 = 'sag'
-    english_name = 'Sango'
-    native_name = u'yângâ tî sängö'
+    _english_name = 'Sango'
+    _native_name = u'yângâ tî sängö'
     _lang_id = 0x1000
 
 
 class Sangu(Language):
     ISO639_2 = 'sbp'
-    english_name = 'Sangu'
-    native_name = u'Sangu'
+    _english_name = 'Sangu'
+    _native_name = u'Sangu'
     _lang_id = 0x1000
 
 
 class Sanskrit(Language):
     ISO639_1 = 'sa'
     ISO639_2 = 'san'
-    english_name = 'Sanskrit'
-    native_name = u'संस्कृतम्'
+    _english_name = 'Sanskrit'
+    _native_name = u'संस्कृतम्'
     _lang_id = 0x004F
 
 
 class SaterlandFrisian(Language):
     ISO639_2 = 'frs'
-    english_name = 'Saterland Frisian'
-    native_name = u'Seeltersk'
+    _english_name = 'Saterland Frisian'
+    _native_name = u'Seeltersk'
 
 
 class ScottishGaelic(Language):
     ISO639_1 = 'gd'
     ISO639_2 = 'gla'
-    english_name = 'Scottish Gaelic'
-    native_name = u'Gàidhlig'
+    _english_name = 'Scottish Gaelic'
+    _native_name = u'Gàidhlig'
     _lang_id = 0x0091
 
 
 class Sena(Language):
     ISO639_2 = 'seh'
-    english_name = 'Sena'
-    native_name = u'Sena'
+    _english_name = 'Sena'
+    _native_name = u'Sena'
     _lang_id = 0x1000
 
 
 class Serbian(Language):
     ISO639_1 = 'sr'
     ISO639_2 = 'srp'
-    english_name = 'Serbian'
-    native_name = u'Serbian'
+    _english_name = 'Serbian'
+    _native_name = u'Serbian'
     _lang_id = 0x7C1A
 
 
@@ -4395,8 +4425,8 @@ class SerbianCyrillic(Language):
     ISO639_1 = 'sr'
     ISO639_2 = 'srp'
     ISO639_3 = 'sr-Cryl'
-    english_name = 'Serbian (Cyrillic)'
-    native_name = u'српски'
+    _english_name = 'Serbian (Cyrillic)'
+    _native_name = u'српски'
     _lang_id = 0x6C1A
 
 
@@ -4404,377 +4434,377 @@ class SerbianLatin(Language):
     ISO639_1 = 'sr'
     ISO639_2 = 'srp'
     ISO639_3 = 'sr-Latn'
-    english_name = 'Serbian (Latin)'
-    native_name = u'srpski'
+    _english_name = 'Serbian (Latin)'
+    _native_name = u'srpski'
     _lang_id = 0x701A
 
 
 class Tswana(Language):
     ISO639_1 = 'tn'
     ISO639_2 = 'tsn'
-    english_name = 'Tswana'
-    native_name = u'Setswana'
+    _english_name = 'Tswana'
+    _native_name = u'Setswana'
     _lang_id = 0x0032
 
 
 class SeychelloisCreole(Language):
     ISO639_2 = 'crs'
-    english_name = 'Seychellois Creole'
-    native_name = u'créole seychellois'
+    _english_name = 'Seychellois Creole'
+    _native_name = u'créole seychellois'
 
 
 class Shambala(Language):
     ISO639_2 = 'ksb'
-    english_name = 'Shambala'
-    native_name = u'Shambala'
+    _english_name = 'Shambala'
+    _native_name = u'Shambala'
     _lang_id = 0x1000
 
 
 class Shona(Language):
     ISO639_1 = 'sn'
     ISO639_2 = 'sna'
-    english_name = 'Shona'
-    native_name = u'chiShona'
+    _english_name = 'Shona'
+    _native_name = u'chiShona'
     _lang_id = 0x1000
 
 
 class Sindhi(Language):
     ISO639_1 = 'sd'
-    english_name = 'Sindhi'
-    native_name = u'सिन्धी'
+    _english_name = 'Sindhi'
+    _native_name = u'सिन्धी'
     _lang_id = 0x0059
 
 
 class SindhiArab(Language):
     ISO639_3 = 'sd-Arab'
-    english_name = 'Sindhi (Arab)'
-    native_name = u'سنڌي'
+    _english_name = 'Sindhi (Arab)'
+    _native_name = u'سنڌي'
     _lang_id = 0x7C59
 
 
 class Sinhala(Language):
     ISO639_1 = 'si'
     ISO639_2 = 'sin'
-    english_name = 'Sinhala'
-    native_name = u'සිංහල'
+    _english_name = 'Sinhala'
+    _native_name = u'සිංහල'
     _lang_id = 0x005B
 
 
 class Slovak(Language):
     ISO639_1 = 'sk'
     ISO639_2 = 'slo'
-    english_name = 'Slovak'
-    native_name = u'slovenský jazyk'
+    _english_name = 'Slovak'
+    _native_name = u'slovenský jazyk'
     _lang_id = 0x001B
 
 
 class Slovenian(Language):
     ISO639_1 = 'sl'
     ISO639_2 = 'slv'
-    english_name = 'Slovenian'
-    native_name = u'slovenščina'
+    _english_name = 'Slovenian'
+    _native_name = u'slovenščina'
     _lang_id = 0x0024
 
 
 class Soga(Language):
     ISO639_2 = 'xog'
-    english_name = 'Soga'
-    native_name = u'Soga'
+    _english_name = 'Soga'
+    _native_name = u'Soga'
     _lang_id = 0x1000
 
 
 class Somali(Language):
     ISO639_1 = 'so'
     ISO639_2 = 'som'
-    english_name = 'Somali'
-    native_name = u'af Soomaali'
+    _english_name = 'Somali'
+    _native_name = u'af Soomaali'
     _lang_id = 0x0077
 
 
 class Sotho(Language):
     ISO639_1 = 'st'
     ISO639_2 = 'sot'
-    english_name = 'Sotho'
-    native_name = u'Sesotho'
+    _english_name = 'Sotho'
+    _native_name = u'Sesotho'
     _lang_id = 0x0030
 
 
 class SothoNorthern(Language):
     ISO639_2 = 'nso'
-    english_name = 'Northern Sotho'
-    native_name = u'Sesotho sa Leboa'
+    _english_name = 'Northern Sotho'
+    _native_name = u'Sesotho sa Leboa'
     _lang_id = 0x006C
 
 
 class SothoSouthern(Language):
     ISO639_1 = 'st'
     ISO639_2 = 'sot'
-    english_name = 'Southern Sotho'
-    native_name = u'Sesotho [southern]'
+    _english_name = 'Southern Sotho'
+    _native_name = u'Sesotho [southern]'
     _lang_id = 0x1000
 
 
 class SouthNdebele(Language):
     ISO639_1 = 'nr'
-    english_name = 'South Ndebele'
-    native_name = u'isiNdebele seSewula'
+    _english_name = 'South Ndebele'
+    _native_name = u'isiNdebele seSewula'
     _lang_id = 0x1000
 
 
 class Spanish(Language):
     ISO639_1 = 'es'
     ISO639_2 = 'spa'
-    english_name = 'Spanish'
-    native_name = u'Español'
+    _english_name = 'Spanish'
+    _native_name = u'Español'
     _lang_id = 0x000A
 
 
 class StandardMoroccanTamazight(Language):
     ISO639_2 = 'zgh'
-    english_name = 'Standard Moroccan Tamazight'
-    native_name = u'ⵜⴰⵎⴰⵣⵉⵖⵜ ⵜⴰⵏⴰⵡⴰⵢⵜ'
+    _english_name = 'Standard Moroccan Tamazight'
+    _native_name = u'ⵜⴰⵎⴰⵣⵉⵖⵜ ⵜⴰⵏⴰⵡⴰⵢⵜ'
     _lang_id = 0x1000
 
 
 class Swati(Language):
     ISO639_1 = 'ss'
     ISO639_2 = 'ssw'
-    english_name = 'Swati'
-    native_name = u'siSwati'
+    _english_name = 'Swati'
+    _native_name = u'siSwati'
     _lang_id = 0x1000
 
 
 class Swedish(Language):
     ISO639_1 = 'sv'
     ISO639_2 = 'swe'
-    english_name = 'Swedish'
-    native_name = u'svenska'
+    _english_name = 'Swedish'
+    _native_name = u'svenska'
     _lang_id = 0x001D
 
 
 class Syriac(Language):
     ISO639_2 = 'syr'
-    english_name = 'Syriac'
-    native_name = u'ܠܫܢܐ ܣܘܪܝܝܐ'
+    _english_name = 'Syriac'
+    _native_name = u'ܠܫܢܐ ܣܘܪܝܝܐ'
     _lang_id = 0x005A
 
 
 class Swahili(Language):
     ISO639_1 = 'sw'
     ISO639_2 = 'swa'
-    english_name = 'Swahili'
-    native_name = u'Kiswahili'
+    _english_name = 'Swahili'
+    _native_name = u'Kiswahili'
     _lang_id = 0x0041
 
 
 class Tachelhit(Language):
     ISO639_2 = 'shi'
-    english_name = 'Tachelhit'
-    native_name = u'Tachelhit'
+    _english_name = 'Tachelhit'
+    _native_name = u'Tachelhit'
     _lang_id = 0x1000
 
 
 class TachelhitLatin(Language):
     ISO639_3 = 'shi-Latn'
-    english_name = 'Tachelhit (Latin)'
-    native_name = u'Tachelhit (Latin)'
+    _english_name = 'Tachelhit (Latin)'
+    _native_name = u'Tachelhit (Latin)'
     _lang_id = 0x1000
 
 
 class Tagalog(Language):
     ISO639_1 = 'tl'
     ISO639_2 = 'tgl'
-    english_name = 'Tagalog'
-    native_name = u'Wikang Tagalog'
+    _english_name = 'Tagalog'
+    _native_name = u'Wikang Tagalog'
 
 
 class Taita(Language):
     ISO639_2 = 'dav'
-    english_name = 'Taita'
-    native_name = u'Taita'
+    _english_name = 'Taita'
+    _native_name = u'Taita'
     _lang_id = 0x1000
 
 
 class Tajik(Language):
     ISO639_1 = 'tg'
     ISO639_2 = 'tgk'
-    english_name = 'Tajik'
-    native_name = u'tojikī'
+    _english_name = 'Tajik'
+    _native_name = u'tojikī'
     _lang_id = 0x0028
 
 
 class TajikCyrillic(Language):
     ISO639_3 = 'tg-Cyrl'
-    english_name = 'Tajik (Cyrillic)'
-    native_name = u'тоҷикӣ'
+    _english_name = 'Tajik (Cyrillic)'
+    _native_name = u'тоҷикӣ'
     _lang_id = 0x7C28
 
 
 class Tamazight(Language):
     ISO639_2 = 'tzm'
-    english_name = 'Tamazight'
-    native_name = u'Tamazight'
+    _english_name = 'Tamazight'
+    _native_name = u'Tamazight'
     _lang_id = 0x005F
 
 
 class TamazightLatin(Language):
     ISO639_3 = 'tzm-Latn'
-    english_name = 'Tamazight (Latin)'
-    native_name = u'Tamazight'
+    _english_name = 'Tamazight (Latin)'
+    _native_name = u'Tamazight'
     _lang_id = 0x7C5F
 
 
 class Tamil(Language):
     ISO639_1 = 'ta'
     ISO639_2 = 'tam'
-    english_name = 'Tamil'
-    native_name = u'தமிழ்'
+    _english_name = 'Tamil'
+    _native_name = u'தமிழ்'
     _lang_id = 0x0049
 
 
 class Tasawaq(Language):
     ISO639_2 = 'twq'
-    english_name = 'Tasawaq'
-    native_name = u'Tasawaq'
+    _english_name = 'Tasawaq'
+    _native_name = u'Tasawaq'
     _lang_id = 0x1000
 
 
 class Tatar(Language):
     ISO639_1 = 'tt'
     ISO639_2 = 'tat'
-    english_name = 'Tatar'
-    native_name = u'татар теле'
+    _english_name = 'Tatar'
+    _native_name = u'татар теле'
     _lang_id = 0x0044
 
 
 class Telugu(Language):
     ISO639_1 = 'te'
     ISO639_2 = 'tel'
-    english_name = 'Telugu'
-    native_name = u'తెలుగు'
+    _english_name = 'Telugu'
+    _native_name = u'తెలుగు'
     _lang_id = 0x004A
 
 
 class Teso(Language):
     ISO639_2 = 'teo'
-    english_name = 'Teso'
-    native_name = u'Teso'
+    _english_name = 'Teso'
+    _native_name = u'Teso'
     _lang_id = 0x1000
 
 
 class Tetum(Language):
     ISO639_2 = 'tet'
-    english_name = 'Tetum'
-    native_name = u'Lia-Tetun'
+    _english_name = 'Tetum'
+    _native_name = u'Lia-Tetun'
 
 
 class Thai(Language):
     ISO639_1 = 'th'
     ISO639_2 = 'tha'
-    english_name = 'Thai'
-    native_name = u'ภาษาไทย'
+    _english_name = 'Thai'
+    _native_name = u'ภาษาไทย'
     _lang_id = 0x001E
 
 
 class Tibetan(Language):
     ISO639_1 = 'bo'
-    english_name = 'Tibetan'
-    native_name = u'ལྷ་སའི་སྐད་'
+    _english_name = 'Tibetan'
+    _native_name = u'ལྷ་སའི་སྐད་'
     _lang_id = 0x0051
 
 
 class Tigre(Language):
     ISO639_2 = 'tig'
-    english_name = 'Tigre'
-    native_name = u'ትግራይት'
+    _english_name = 'Tigre'
+    _native_name = u'ትግራይት'
     _lang_id = 0x1000
 
 
 class Tigrinya(Language):
     ISO639_1 = 'ti'
     ISO639_2 = 'tir'
-    english_name = 'Tigrinya'
-    native_name = u'ትግርኛ'
+    _english_name = 'Tigrinya'
+    _native_name = u'ትግርኛ'
     _lang_id = 0x0073
 
 
 class Tobian(Language):
     ISO639_3 = 'tox'
-    english_name = 'Tobian'
-    native_name = u'ramarih Hatohobei'
+    _english_name = 'Tobian'
+    _native_name = u'ramarih Hatohobei'
 
 
 class Tokelauan(Language):
     ISO639_2 = 'tkl'
-    english_name = 'Tokelauan'
-    native_name = u'Fakatokelau'
+    _english_name = 'Tokelauan'
+    _native_name = u'Fakatokelau'
 
 
 class TokPisin(Language):
     ISO639_2 = 'tpi'
-    english_name = 'Tok Pisin'
-    native_name = u'Tok Pisin'
+    _english_name = 'Tok Pisin'
+    _native_name = u'Tok Pisin'
 
 
 class Tongan(Language):
     ISO639_1 = 'to'
-    english_name = 'Tongan'
-    native_name = u'lea faka-Tonga'
+    _english_name = 'Tongan'
+    _native_name = u'lea faka-Tonga'
     _lang_id = 0x1000
 
 
 class Tsonga(Language):
     ISO639_1 = 'ts'
     ISO639_2 = 'tso'
-    english_name = 'Tsonga'
-    native_name = u'Xitsonga'
+    _english_name = 'Tsonga'
+    _native_name = u'Xitsonga'
     _lang_id = 0x0031
 
 
 class Turkish(Language):
     ISO639_1 = 'tr'
     ISO639_2 = 'tur'
-    english_name = 'Turkish'
-    native_name = u'Türkçe'
+    _english_name = 'Turkish'
+    _native_name = u'Türkçe'
     _lang_id = 0x001F
 
 
 class Turkmen(Language):
     ISO639_1 = 'tk'
     ISO639_2 = 'tuk'
-    english_name = 'Turkmen'
-    native_name = u'Türkmençe'
+    _english_name = 'Turkmen'
+    _native_name = u'Türkmençe'
     _lang_id = 0x0042
 
 
 class Ukrainian(Language):
     ISO639_1 = 'uk'
     ISO639_2 = 'ukr'
-    english_name = 'Ukrainian'
-    native_name = u'українська мова'
+    _english_name = 'Ukrainian'
+    _native_name = u'українська мова'
     _lang_id = 0x0022
 
 
 class UpperSorbian(Language):
     ISO639_2 = 'hsb'
-    english_name = 'Upper Sorbian'
-    native_name = u'hornjoserbšćina'
+    _english_name = 'Upper Sorbian'
+    _native_name = u'hornjoserbšćina'
     _lang_id = 0x002E
 
 
 class Urdu(Language):
     ISO639_1 = 'ur'
     ISO639_2 = 'urd'
-    english_name = 'Urdu'
-    native_name = u'اُردُو'
+    _english_name = 'Urdu'
+    _native_name = u'اُردُو'
     _lang_id = 0x0020
 
 
 class Uyghur(Language):
     ISO639_1 = 'ug'
     ISO639_2 = 'uig'
-    english_name = 'Uyghur'
-    native_name = u'ئۇيغۇرچە'
+    _english_name = 'Uyghur'
+    _native_name = u'ئۇيغۇرچە'
     _lang_id = 0x0080
 
 
@@ -4782,8 +4812,8 @@ class UzbekArab(Language):
     ISO639_1 = 'uz'
     ISO639_2 = 'uzb'
     ISO639_3 = 'uzb-Arab'
-    english_name = 'Uzbek (Arab)'
-    native_name = u'ئوبېک تیلی'
+    _english_name = 'Uzbek (Arab)'
+    _native_name = u'ئوبېک تیلی'
     _lang_id = 0x1000
 
 
@@ -4791,8 +4821,8 @@ class UzbekCyrillic(Language):
     ISO639_1 = 'uz'
     ISO639_2 = 'uzb'
     ISO639_3 = 'uzb-Cyrl'
-    english_name = 'Uzbek (Cyrillic)'
-    native_name = u'ўзбекча'
+    _english_name = 'Uzbek (Cyrillic)'
+    _native_name = u'ўзбекча'
     _lang_id = 0x7843
 
 
@@ -4800,142 +4830,142 @@ class UzbekLatin(Language):
     ISO639_1 = 'uz'
     ISO639_2 = 'uzb'
     ISO639_3 = 'uzb-Latn'
-    english_name = 'Uzbek (Latin)'
-    native_name = u'O\'zbekcha'
+    _english_name = 'Uzbek (Latin)'
+    _native_name = u'O\'zbekcha'
     _lang_id = 0x0043
 
 
 class Vai(Language):
     ISO639_2 = 'vai'
-    english_name = 'Vai'
-    native_name = u'ꕙꔤ'
+    _english_name = 'Vai'
+    _native_name = u'ꕙꔤ'
     _lang_id = 0x1000
 
 
 class VaiLatin(Language):
     ISO639_3 = 'vai-Latn'
-    english_name = 'Vai (Latin)'
-    native_name = u'Vai (Latin)'
+    _english_name = 'Vai (Latin)'
+    _native_name = u'Vai (Latin)'
     _lang_id = 0x1000
 
 
 class Valencian(Language):
     ISO639_1 = 'ca'
-    english_name = 'Valencian'
-    native_name = u'Valencian'
+    _english_name = 'Valencian'
+    _native_name = u'Valencian'
     _lang_id = 0x0803
 
 
 class Venda(Language):
     ISO639_1 = 've'
     ISO639_2 = 'ven'
-    english_name = 'Venda'
-    native_name = u'Tshivenḓa'
+    _english_name = 'Venda'
+    _native_name = u'Tshivenḓa'
     _lang_id = 0x0033
 
 
 class Vietnamese(Language):
     ISO639_1 = 'vi'
     ISO639_2 = 'vie'
-    english_name = 'Vietnamese'
-    native_name = u'Tiếng Việt'
+    _english_name = 'Vietnamese'
+    _native_name = u'Tiếng Việt'
     _lang_id = 0x002A
 
 
 class Volapuk(Language):
     ISO639_1 = 'vo'
     ISO639_2 = 'vol'
-    english_name = 'Volapuk'
-    native_name = u'Volapük'
+    _english_name = 'Volapuk'
+    _native_name = u'Volapük'
     _lang_id = 0x1000
 
 
 class Vunjo(Language):
     ISO639_2 = 'vun'
-    english_name = 'Vunjo'
-    native_name = u'Vunjo'
+    _english_name = 'Vunjo'
+    _native_name = u'Vunjo'
     _lang_id = 0x1000
 
 
 class Walser(Language):
     ISO639_2 = 'wae'
-    english_name = 'Walser'
-    native_name = u'Walser'
+    _english_name = 'Walser'
+    _native_name = u'Walser'
     _lang_id = 0x1000
 
 
 class Welsh(Language):
     ISO639_1 = 'cy'
     ISO639_2 = 'wel'
-    english_name = 'Welsh'
-    native_name = u'y Gymraeg'
+    _english_name = 'Welsh'
+    _native_name = u'y Gymraeg'
     _lang_id = 0x0052
 
 
 class Walamo(Language):
     ISO639_2 = 'wal'
-    english_name = 'Walamo'
-    native_name = u'Walamo'
+    _english_name = 'Walamo'
+    _native_name = u'Walamo'
     _lang_id = 0x1000
 
 
 class Wolof(Language):
     ISO639_1 = 'wo'
     ISO639_2 = 'wol'
-    english_name = 'Wolof'
-    native_name = u'Wolof'
+    _english_name = 'Wolof'
+    _native_name = u'Wolof'
     _lang_id = 0x0088
 
 
 class Xhosa(Language):
     ISO639_1 = 'xh'
     ISO639_2 = 'xho'
-    english_name = 'Xhosa'
-    native_name = u'isiXhosa'
+    _english_name = 'Xhosa'
+    _native_name = u'isiXhosa'
     _lang_id = 0x0034
 
 
 class Yangben(Language):
     ISO639_2 = 'yav'
-    english_name = 'Yangben'
-    native_name = u'Yangben'
+    _english_name = 'Yangben'
+    _native_name = u'Yangben'
     _lang_id = 0x1000
 
 
 class SichuanYi(Language):
     ISO639_1 = 'ii'
     ISO639_2 = 'iii'
-    english_name = 'Sichuan Yi'
-    native_name = u'ꆈꌠꉙ'
+    _english_name = 'Sichuan Yi'
+    _native_name = u'ꆈꌠꉙ'
     _lang_id = 0x0078
 
 
 class Yoruba(Language):
     ISO639_1 = 'yo'
     ISO639_2 = 'yor'
-    english_name = 'Yoruba'
-    native_name = u'èdè Yorùbá'
+    _english_name = 'Yoruba'
+    _native_name = u'èdè Yorùbá'
     _lang_id = 0x006A
 
 
 class Zarma(Language):
     ISO639_2 = 'dje'
-    english_name = 'Zarma'
-    native_name = u'Zarma'
+    _english_name = 'Zarma'
+    _native_name = u'Zarma'
     _lang_id = 0x1000
 
 
 class Zulu(Language):
     ISO639_1 = 'zu'
     ISO639_2 = 'zul'
-    english_name = 'Zulu'
-    native_name = u'isiZulu'
+    _english_name = 'Zulu'
+    _native_name = u'isiZulu'
     _lang_id = 0x0035
 
 
 class Afghanistan(Locale):
     _iso_code = 'AF'
-    english_name = 'Afghanistan'
+    _english_name = 'Afghanistan'
     _flag = 'flags\\AF.png'
     languages = [
         Persian(u'د افغانستان اسلامي دولتدولت اسلامی افغانستان', lcid=0x1000),
@@ -4947,7 +4977,7 @@ class Afghanistan(Locale):
 
 class AlandIslands(Locale):
     _iso_code = 'AX'
-    english_name = 'Aland Islands'
+    _english_name = 'Aland Islands'
     _flag = 'flags\\AX.png'
     languages = [
         Swedish(u'Åland', lcid=0x1000)
@@ -4956,7 +4986,7 @@ class AlandIslands(Locale):
 
 class Albania(Locale):
     _iso_code = 'AL'
-    english_name = 'Albania'
+    _english_name = 'Albania'
     _flag = 'flags\\AL.png'
     languages = [
         Albanian(u'Shqipëria', lcid=0x041C)
@@ -4965,7 +4995,7 @@ class Albania(Locale):
 
 class Algeria(Locale):
     _iso_code = 'DZ'
-    english_name = 'Algeria'
+    _english_name = 'Algeria'
     _flag = 'flags\\DZ.png'
     languages = [
         Arabic(u'الجزائر', lcid=0x1401),
@@ -4977,7 +5007,7 @@ class Algeria(Locale):
 
 class AmericanSamoa(Locale):
     _iso_code = 'AS'
-    english_name = 'American Samoa'
+    _english_name = 'American Samoa'
     _flag = 'flags\\AS.png'
     languages = [
         English(u'American Samoa', lcid=0x1000),
@@ -4987,7 +5017,7 @@ class AmericanSamoa(Locale):
 
 class Andorra(Locale):
     _iso_code = 'AD'
-    english_name = 'Andorra'
+    _english_name = 'Andorra'
     _flag = 'flags\\AD.png'
     languages = [
         Catalan(u'Andorra', lcid=0x1000)
@@ -4996,7 +5026,7 @@ class Andorra(Locale):
 
 class Angola(Locale):
     _iso_code = 'AO'
-    english_name = 'Angola'
+    _english_name = 'Angola'
     _flag = 'flags\\AO.png'
     languages = [
         Portuguese(u'Angola', lcid=0x1000),
@@ -5006,7 +5036,7 @@ class Angola(Locale):
 
 class Anguilla(Locale):
     _iso_code = 'AI'
-    english_name = 'Anguilla'
+    _english_name = 'Anguilla'
     _flag = 'flags\\AI.png'
     languages = [
         English(u'Anguilla', lcid=0x1000)
@@ -5015,7 +5045,7 @@ class Anguilla(Locale):
 
 class Antarctica(Locale):
     _iso_code = 'AQ'
-    english_name = 'Antarctica'
+    _english_name = 'Antarctica'
     _flag = 'flags\\AQ.png'
     languages = [
         English(u'Antarctica', lcid=0x1000),
@@ -5027,7 +5057,7 @@ class Antarctica(Locale):
 
 class AntiguaBarbuda(Locale):
     _iso_code = 'AG'
-    english_name = 'Antigua and Barbuda'
+    _english_name = 'Antigua and Barbuda'
     _flag = 'flags\\AG.png'
     languages = [
         English(u'Antigua and Barbuda', lcid=0x1000)
@@ -5036,7 +5066,7 @@ class AntiguaBarbuda(Locale):
 
 class Argentina(Locale):
     _iso_code = 'AR'
-    english_name = 'Argentina'
+    _english_name = 'Argentina'
     _flag = 'flags\\AR.png'
     languages = [
         Spanish(u'Argentina', lcid=0x2C0A)
@@ -5045,7 +5075,7 @@ class Argentina(Locale):
 
 class Armenia(Locale):
     _iso_code = 'AM'
-    english_name = 'Armenia'
+    _english_name = 'Armenia'
     _flag = 'flags\\AM.png'
     languages = [
         Armenian(u'Հայաստան', lcid=0x042B)
@@ -5054,7 +5084,7 @@ class Armenia(Locale):
 
 class Aruba(Locale):
     _iso_code = 'AW'
-    english_name = 'Aruba'
+    _english_name = 'Aruba'
     _flag = 'flags\\AW.png'
     languages = [
         Dutch(u'Aruba', lcid=0x1000),
@@ -5064,7 +5094,7 @@ class Aruba(Locale):
 
 class Australia(Locale):
     _iso_code = 'AU'
-    english_name = 'Australia'
+    _english_name = 'Australia'
     _flag = 'flags\\AU.png'
     languages = [
         English(u'Australia', lcid=0x0C09)
@@ -5073,7 +5103,7 @@ class Australia(Locale):
 
 class Austria(Locale):
     _iso_code = 'AT'
-    english_name = 'Austria'
+    _english_name = 'Austria'
     _flag = 'flags\\AT.png'
     languages = [
         German(u'Österreich', lcid=0x0C07),
@@ -5083,7 +5113,7 @@ class Austria(Locale):
 
 class Azerbaijan(Locale):
     _iso_code = 'AZ'
-    english_name = 'Azerbaijan'
+    _english_name = 'Azerbaijan'
     _flag = 'flags\\AZ.png'
     languages = [
         Azerbaijani(u'Azərbaycan', lcid=None),
@@ -5094,7 +5124,7 @@ class Azerbaijan(Locale):
 
 class Bahamas(Locale):
     _iso_code = 'BS'
-    english_name = 'Bahamas'
+    _english_name = 'Bahamas'
     _flag = 'flags\\BS.png'
     languages = [
         English(u'The Bahamas', lcid=0x1000)
@@ -5103,7 +5133,7 @@ class Bahamas(Locale):
 
 class Bahrein(Locale):
     _iso_code = 'BH'
-    english_name = 'Bahrein'
+    _english_name = 'Bahrein'
     _flag = 'flags\\BH.png'
     languages = [
         Arabic(u'البحرين', lcid=0x3C01)
@@ -5112,7 +5142,7 @@ class Bahrein(Locale):
 
 class Bangladesh(Locale):
     _iso_code = 'BD'
-    english_name = 'Bangladesh'
+    _english_name = 'Bangladesh'
     _flag = 'flags\\BD.png'
     languages = [
         Bengali(u'বাংলাদেশ', lcid=0x0845)
@@ -5121,7 +5151,7 @@ class Bangladesh(Locale):
 
 class Barbados(Locale):
     _iso_code = 'BB'
-    english_name = 'Barbados'
+    _english_name = 'Barbados'
     _flag = 'flags\\BB.png'
     languages = [
         English(u'Barbados', lcid=0x1000)
@@ -5130,7 +5160,7 @@ class Barbados(Locale):
 
 class Belarus(Locale):
     _iso_code = 'BY'
-    english_name = 'Belarus'
+    _english_name = 'Belarus'
     _flag = 'flags\\BY.png'
     languages = [
         Belarusian(u'Bielaruś', lcid=0x0423),
@@ -5140,7 +5170,7 @@ class Belarus(Locale):
 
 class Belgium(Locale):
     _iso_code = 'BE'
-    english_name = 'Belgium'
+    _english_name = 'Belgium'
     _flag = 'flags\\BE.png'
     languages = [
         German(u'Belgien', lcid=0x1000),
@@ -5152,7 +5182,7 @@ class Belgium(Locale):
 
 class Belize(Locale):
     _iso_code = 'BZ'
-    english_name = 'Belize'
+    _english_name = 'Belize'
     _flag = 'flags\\BZ.png'
     languages = [
         English(u'Belize', lcid=0x2809),
@@ -5162,7 +5192,7 @@ class Belize(Locale):
 
 class Benin(Locale):
     _iso_code = 'BJ'
-    english_name = 'Benin'
+    _english_name = 'Benin'
     _flag = 'flags\\BJ.png'
     languages = [
         French(u'Bénin', lcid=0x1000),
@@ -5172,7 +5202,7 @@ class Benin(Locale):
 
 class Bermuda(Locale):
     _iso_code = 'BM'
-    english_name = 'Bermuda'
+    _english_name = 'Bermuda'
     _flag = 'flags\\BM.png'
     languages = [
         English(u'Bermuda', lcid=0x1000)
@@ -5181,7 +5211,7 @@ class Bermuda(Locale):
 
 class Bhutan(Locale):
     _iso_code = 'BT'
-    english_name = 'Bhutan'
+    _english_name = 'Bhutan'
     _flag = 'flags\\BT.png'
     languages = [
         Dzongkha(u'Druk Yul', lcid=None)
@@ -5190,7 +5220,7 @@ class Bhutan(Locale):
 
 class Bolivia(Locale):
     _iso_code = 'BO'
-    english_name = 'Bolivia'
+    _english_name = 'Bolivia'
     _flag = 'flags\\BO.png'
     languages = [
         Aymara(u'Wuliwya', lcid=None),
@@ -5202,7 +5232,7 @@ class Bolivia(Locale):
 
 class BosniaHerzegovina(Locale):
     _iso_code = 'BA'
-    english_name = 'Bosnia and Herzegovina'
+    _english_name = 'Bosnia and Herzegovina'
     _flag = 'flags\\BA.png'
     languages = [
         BosnianCyrillic(u'Босна и Херцеговина', lcid=0x201A),
@@ -5215,7 +5245,7 @@ class BosniaHerzegovina(Locale):
 
 class Botswana(Locale):
     _iso_code = 'BW'
-    english_name = 'Botswana'
+    _english_name = 'Botswana'
     _flag = 'flags\\BW.png'
     languages = [
         English(u'Botswana', lcid=0x1000),
@@ -5225,7 +5255,7 @@ class Botswana(Locale):
 
 class BouvetIsland(Locale):
     _iso_code = 'BV'
-    english_name = 'Bouvet Island'
+    _english_name = 'Bouvet Island'
     _flag = 'flags\\BV.png'
     languages = [
         Norwegian(u'Bouvetøya', lcid=None)
@@ -5234,7 +5264,7 @@ class BouvetIsland(Locale):
 
 class Brazil(Locale):
     _iso_code = 'BR'
-    english_name = 'Brazil'
+    _english_name = 'Brazil'
     _flag = 'flags\\BR.png'
     languages = [
         Portuguese(u'Brasil', lcid=0x0416),
@@ -5244,7 +5274,7 @@ class Brazil(Locale):
 
 class BritishIndianOceanTerritory(Locale):
     _iso_code = 'IO'
-    english_name = 'British Indian Ocean Territory'
+    _english_name = 'British Indian Ocean Territory'
     _flag = 'flags\\IO.png'
     languages = [
         English(u'British Indian Ocean Territory', lcid=0x1000)
@@ -5253,7 +5283,7 @@ class BritishIndianOceanTerritory(Locale):
 
 class BritishVirginIslands(Locale):
     _iso_code = 'VG'
-    english_name = 'British Virgin Islands'
+    _english_name = 'British Virgin Islands'
     _flag = 'flags\\VG.png'
     languages = [
         English(u'British Virgin Islands', lcid=0x1000)
@@ -5262,7 +5292,7 @@ class BritishVirginIslands(Locale):
 
 class BruneiDarussalam(Locale):
     _iso_code = 'BN'
-    english_name = 'Brunei Darussalam'
+    _english_name = 'Brunei Darussalam'
     _flag = 'flags\\BN.png'
     languages = [
         Malay(u'Brunei', lcid=0x083E)
@@ -5271,7 +5301,7 @@ class BruneiDarussalam(Locale):
 
 class Bulgaria(Locale):
     _iso_code = 'BG'
-    english_name = 'Bulgaria'
+    _english_name = 'Bulgaria'
     _flag = 'flags\\BG.png'
     languages = [
         Bulgarian(u'Bulgariya', lcid=0x0402)
@@ -5280,7 +5310,7 @@ class Bulgaria(Locale):
 
 class BurkinaFaso(Locale):
     _iso_code = 'BF'
-    english_name = 'Burkina Faso'
+    _english_name = 'Burkina Faso'
     _flag = 'flags\\BF.png'
     languages = [
         French(u'Burkina Faso', lcid=None)
@@ -5289,7 +5319,7 @@ class BurkinaFaso(Locale):
 
 class Burundi(Locale):
     _iso_code = 'BI'
-    english_name = 'Burundi'
+    _english_name = 'Burundi'
     _flag = 'flags\\BI.png'
     languages = [
         French(u'Burundi', lcid=None),
@@ -5300,7 +5330,7 @@ class Burundi(Locale):
 
 class CaboVerde(Locale):
     _iso_code = 'CV'
-    english_name = 'Cabo Verde'
+    _english_name = 'Cabo Verde'
     _flag = 'flags\\CV.png'
     languages = [
         Portuguese(u'Cabo Verde', lcid=None),
@@ -5310,7 +5340,7 @@ class CaboVerde(Locale):
 
 class Cambodia(Locale):
     _iso_code = 'KH'
-    english_name = 'Cambodia'
+    _english_name = 'Cambodia'
     _flag = 'flags\\KH.png'
     languages = [
         Khmer(u'កម្ពុជា', lcid=0x0453)
@@ -5319,7 +5349,7 @@ class Cambodia(Locale):
 
 class Cameroon(Locale):
     _iso_code = 'CM'
-    english_name = 'Cameroon'
+    _english_name = 'Cameroon'
     _flag = 'flags\\CM.png'
     languages = [
         English(u'Cameroon', lcid=0x1000),
@@ -5342,7 +5372,7 @@ class Cameroon(Locale):
 
 class Canada(Locale):
     _iso_code = 'CA'
-    english_name = 'Canada'
+    _english_name = 'Canada'
     _flag = 'flags\\CA.png'
     languages = [
         English(u'Canada', lcid=0x1009),
@@ -5355,7 +5385,7 @@ class Canada(Locale):
 
 class Caribbean(Locale):
     _iso_code = '029'
-    english_name = 'Caribbean'
+    _english_name = 'Caribbean'
     _flag = None
     languages = [
         English(u'Caribbean', lcid=0x0009)
@@ -5364,7 +5394,7 @@ class Caribbean(Locale):
 
 class CaribbeanNetherlands(Locale):
     _iso_code = 'BQ'
-    english_name = 'Caribbean Netherlands'
+    _english_name = 'Caribbean Netherlands'
     _flag = 'flags\\BQ.png'
     languages = [
         Dutch(u'Caribisch Nederland', lcid=None)
@@ -5373,7 +5403,7 @@ class CaribbeanNetherlands(Locale):
 
 class CaymanIslands(Locale):
     _iso_code = 'KY'
-    english_name = 'Cayman Islands'
+    _english_name = 'Cayman Islands'
     _flag = 'flags\\KY.png'
     languages = [
         English(u'Cayman Islands', lcid=0x1000)
@@ -5382,7 +5412,7 @@ class CaymanIslands(Locale):
 
 class CentralAfricanRepublic(Locale):
     _iso_code = 'CF'
-    english_name = 'Central African Republic'
+    _english_name = 'Central African Republic'
     _flag = 'flags\\CF.png'
     languages = [
         French(u'République Centrafricaine', lcid=None),
@@ -5393,7 +5423,7 @@ class CentralAfricanRepublic(Locale):
 
 class Chad(Locale):
     _iso_code = 'TD'
-    english_name = 'Chad'
+    _english_name = 'Chad'
     _flag = 'flags\\TD.png'
     languages = [
         Arabic(u'تشاد', lcid=None),
@@ -5403,7 +5433,7 @@ class Chad(Locale):
 
 class Chile(Locale):
     _iso_code = 'CL'
-    english_name = 'Chile'
+    _english_name = 'Chile'
     _flag = 'flags\\CL.png'
     languages = [
         Spanish(u'Chile', lcid=0x340A),
@@ -5413,7 +5443,7 @@ class Chile(Locale):
 
 class China(Locale):
     _iso_code = 'CN'
-    english_name = 'China (People\'s Republic Of)'
+    _english_name = 'China (People\'s Republic Of)'
     _flag = 'flags\\CN.png'
     languages = [
         ChineseSimplified(u'中国 (中华人民共和国)', lcid=0x0804),
@@ -5426,7 +5456,7 @@ class China(Locale):
 
 class ChristmasIsland(Locale):
     _iso_code = 'CX'
-    english_name = 'Christmas Island'
+    _english_name = 'Christmas Island'
     _flag = 'flags\\CX.png'
     languages = [
         English(u'Christmas Island', lcid=0x1000)
@@ -5435,7 +5465,7 @@ class ChristmasIsland(Locale):
 
 class CityoftheVatican(Locale):
     _iso_code = 'VA'
-    english_name = 'City of the Vatican'
+    _english_name = 'City of the Vatican'
     _flag = 'flags\\VA.png'
     languages = [
         Italian(u'Città del Vaticano', lcid=None)
@@ -5444,7 +5474,7 @@ class CityoftheVatican(Locale):
 
 class CocosIslands(Locale):
     _iso_code = 'CC'
-    english_name = 'Cocos (Keeling) Islands'
+    _english_name = 'Cocos (Keeling) Islands'
     _flag = 'flags\\CC.png'
     languages = [
         English(u'Cocos (Keeling) Islands', lcid=0x1000)
@@ -5453,7 +5483,7 @@ class CocosIslands(Locale):
 
 class Colombia(Locale):
     _iso_code = 'CO'
-    english_name = 'Colombia'
+    _english_name = 'Colombia'
     _flag = 'flags\\CO.png'
     languages = [
         Spanish(u'Colombia', lcid=0x240A)
@@ -5462,7 +5492,7 @@ class Colombia(Locale):
 
 class Comores(Locale):
     _iso_code = 'KM'
-    english_name = 'Comores'
+    _english_name = 'Comores'
     _flag = 'flags\\KM.png'
     languages = [
         Arabic(u'جزر القمر', lcid=None),
@@ -5473,7 +5503,7 @@ class Comores(Locale):
 
 class CookIslands(Locale):
     _iso_code = 'CK'
-    english_name = 'Cook Islands'
+    _english_name = 'Cook Islands'
     _flag = 'flags\\CK.png'
     languages = [
         English(u'Cook Islands', lcid=0x1000),
@@ -5483,7 +5513,7 @@ class CookIslands(Locale):
 
 class CostaRica(Locale):
     _iso_code = 'CR'
-    english_name = 'Costa Rica'
+    _english_name = 'Costa Rica'
     _flag = 'flags\\CR.png'
     languages = [
         Spanish(u'Costa Rica', lcid=0x140A)
@@ -5492,7 +5522,7 @@ class CostaRica(Locale):
 
 class CountryOfNauru(Locale):
     _iso_code = 'NR'
-    english_name = 'Nauru'
+    _english_name = 'Nauru'
     _flag = 'flags\\NR.png'
     languages = [
         English(u'Nauru', lcid=0x1000),
@@ -5502,7 +5532,7 @@ class CountryOfNauru(Locale):
 
 class Croatia(Locale):
     _iso_code = 'HR'
-    english_name = 'Croatia'
+    _english_name = 'Croatia'
     _flag = 'flags\\HR.png'
     languages = [
         CroatianLatin(u'Hrvatska', lcid=0x041A)
@@ -5511,7 +5541,7 @@ class Croatia(Locale):
 
 class Cuba(Locale):
     _iso_code = 'CU'
-    english_name = 'Cuba'
+    _english_name = 'Cuba'
     _flag = 'flags\\CU.png'
     languages = [
         Spanish(u'Cuba', lcid=None)
@@ -5520,7 +5550,7 @@ class Cuba(Locale):
 
 class Curacao(Locale):
     _iso_code = 'CW'
-    english_name = 'Curacao'
+    _english_name = 'Curacao'
     _flag = 'flags\\CW.png'
     languages = [
         English(u'Curacao', lcid=0x1000),
@@ -5530,7 +5560,7 @@ class Curacao(Locale):
 
 class Cyprus(Locale):
     _iso_code = 'CY'
-    english_name = 'Cyprus'
+    _english_name = 'Cyprus'
     _flag = 'flags\\CY.png'
     languages = [
         Greek(u'Κύπρος', lcid=None),
@@ -5541,7 +5571,7 @@ class Cyprus(Locale):
 
 class CzechRepublic(Locale):
     _iso_code = 'CZ'
-    english_name = 'Czech Republic'
+    _english_name = 'Czech Republic'
     _flag = 'flags\\CZ.png'
     languages = [
         Czech(u'Česká republika Česko', lcid=0x0405)
@@ -5550,7 +5580,7 @@ class CzechRepublic(Locale):
 
 class DemocraticRepublicCongo(Locale):
     _iso_code = 'CD'
-    english_name = 'Democratic Republic of the Congo'
+    _english_name = 'Democratic Republic of the Congo'
     _flag = 'flags\\CD.png'
     languages = [
         French(u'République démocratique du Congo', lcid=None),
@@ -5562,7 +5592,7 @@ class DemocraticRepublicCongo(Locale):
 
 class Denmark(Locale):
     _iso_code = 'DK'
-    english_name = 'Denmark'
+    _english_name = 'Denmark'
     _flag = 'flags\\DK.png'
     languages = [
         Danish(u'Danmark', lcid=0x0406),
@@ -5573,7 +5603,7 @@ class Denmark(Locale):
 
 class Djibouti(Locale):
     _iso_code = 'DJ'
-    english_name = 'Djibouti'
+    _english_name = 'Djibouti'
     _flag = 'flags\\DJ.png'
     languages = [
         Afar(u'Gabuutih', lcid=None),
@@ -5585,7 +5615,7 @@ class Djibouti(Locale):
 
 class Dominica(Locale):
     _iso_code = 'DM'
-    english_name = 'Dominica'
+    _english_name = 'Dominica'
     _flag = 'flags\\DM.png'
     languages = [
         English(u'Dominica', lcid=0x1000)
@@ -5594,7 +5624,7 @@ class Dominica(Locale):
 
 class DominicanRepublic(Locale):
     _iso_code = 'DO'
-    english_name = 'Dominican Republic'
+    _english_name = 'Dominican Republic'
     _flag = 'flags\\DO.png'
     languages = [
         Spanish(u'República Dominicana', lcid=0x1C0A)
@@ -5603,7 +5633,7 @@ class DominicanRepublic(Locale):
 
 class Ecuador(Locale):
     _iso_code = 'EC'
-    english_name = 'Ecuador'
+    _english_name = 'Ecuador'
     _flag = 'flags\\EC.png'
     languages = [
         Spanish(u'Ecuador', lcid=0x300A),
@@ -5613,7 +5643,7 @@ class Ecuador(Locale):
 
 class Egypt(Locale):
     _iso_code = 'EG'
-    english_name = 'Egypt'
+    _english_name = 'Egypt'
     _flag = 'flags\\EG.png'
     languages = [
         Arabic(u'مصر', lcid=0x0C01)
@@ -5622,7 +5652,7 @@ class Egypt(Locale):
 
 class ElSalvador(Locale):
     _iso_code = 'SV'
-    english_name = 'El Salvador'
+    _english_name = 'El Salvador'
     _flag = 'flags\\SV.png'
     languages = [
         Spanish(u'El Salvador', lcid=0x440A)
@@ -5631,7 +5661,7 @@ class ElSalvador(Locale):
 
 class EquatorialGuinea(Locale):
     _iso_code = 'GQ'
-    english_name = 'Equatorial Guinea'
+    _english_name = 'Equatorial Guinea'
     _flag = 'flags\\GQ.png'
     languages = [
         Spanish(u'Guiena ecuatorial', lcid=None),
@@ -5642,7 +5672,7 @@ class EquatorialGuinea(Locale):
 
 class Eritrea(Locale):
     _iso_code = 'ER'
-    english_name = 'Eritrea'
+    _english_name = 'Eritrea'
     _flag = 'flags\\ER.png'
     languages = [
         Arabic(u'إرتريا', lcid=None),
@@ -5657,7 +5687,7 @@ class Eritrea(Locale):
 
 class Estonia(Locale):
     _iso_code = 'EE'
-    english_name = 'Estonia'
+    _english_name = 'Estonia'
     _flag = 'flags\\EE.png'
     languages = [
         Estonian(u'eSwatini', lcid=0x0425)
@@ -5666,7 +5696,7 @@ class Estonia(Locale):
 
 class Ethiopia(Locale):
     _iso_code = 'ET'
-    english_name = 'Ethiopia'
+    _english_name = 'Ethiopia'
     _flag = 'flags\\ET.png'
     languages = [
         Amharic(u'ኢትዮጵያ', lcid=0x045E),
@@ -5680,7 +5710,7 @@ class Ethiopia(Locale):
 
 class FalklandIslands(Locale):
     _iso_code = 'FK'
-    english_name = 'Falkland Islands'
+    _english_name = 'Falkland Islands'
     _flag = 'flags\\FK.png'
     languages = [
         English(u'Falkland Islands', lcid=0x1000)
@@ -5689,7 +5719,7 @@ class FalklandIslands(Locale):
 
 class FaroeIslands(Locale):
     _iso_code = 'FO'
-    english_name = 'Faroe Islands'
+    _english_name = 'Faroe Islands'
     _flag = 'flags\\FO.png'
     languages = [
         Danish(u'Færøerne', lcid=None),
@@ -5699,7 +5729,7 @@ class FaroeIslands(Locale):
 
 class Fiji(Locale):
     _iso_code = 'FJ'
-    english_name = 'Fiji'
+    _english_name = 'Fiji'
     _flag = 'flags\\FJ.png'
     languages = [
         English(u'Fiji', lcid=0x1000)
@@ -5708,7 +5738,7 @@ class Fiji(Locale):
 
 class Finland(Locale):
     _iso_code = 'FI'
-    english_name = 'Finland'
+    _english_name = 'Finland'
     _flag = 'flags\\FI.png'
     languages = [
         Finnish(u'Suomi', lcid=0x040B),
@@ -5722,7 +5752,7 @@ class Finland(Locale):
 
 class France(Locale):
     _iso_code = 'FR'
-    english_name = 'France'
+    _english_name = 'France'
     _flag = 'flags\\FR.png'
     languages = [
         French(u'France', lcid=0x040C),
@@ -5737,7 +5767,7 @@ class France(Locale):
 
 class FrenchGuiana(Locale):
     _iso_code = 'GF'
-    english_name = 'French Guiana'
+    _english_name = 'French Guiana'
     _flag = 'flags\\GF.png'
     languages = [
         French(u'Guyane', lcid=None)
@@ -5746,7 +5776,7 @@ class FrenchGuiana(Locale):
 
 class FrenchPolynesia(Locale):
     _iso_code = 'PF'
-    english_name = 'French Polynesia'
+    _english_name = 'French Polynesia'
     _flag = 'flags\\PF.png'
     languages = [
         French(u'Polynésie française', lcid=None)
@@ -5755,7 +5785,7 @@ class FrenchPolynesia(Locale):
 
 class FrenchSouthernandAntarcticLands(Locale):
     _iso_code = 'TF'
-    english_name = 'French Southern and Antarctic Lands'
+    _english_name = 'French Southern and Antarctic Lands'
     _flag = 'flags\\TF.png'
     languages = [
         French(u'Terres australes et antarctiques françaises', lcid=None)
@@ -5764,7 +5794,7 @@ class FrenchSouthernandAntarcticLands(Locale):
 
 class Gabon(Locale):
     _iso_code = 'GA'
-    english_name = 'Gabon'
+    _english_name = 'Gabon'
     _flag = 'flags\\GA.png'
     languages = [
         French(u'République gabonaise', lcid=None)
@@ -5773,7 +5803,7 @@ class Gabon(Locale):
 
 class Georgia(Locale):
     _iso_code = 'GE'
-    english_name = 'Georgia'
+    _english_name = 'Georgia'
     _flag = 'flags\\GE.png'
     languages = [
         Georgian(u'საქართველო', lcid=0x0437),
@@ -5783,7 +5813,7 @@ class Georgia(Locale):
 
 class Germany(Locale):
     _iso_code = 'DE'
-    english_name = 'Germany'
+    _english_name = 'Germany'
     _flag = 'flags\\DE.png'
     languages = [
         German(u'Deutschland', lcid=0x0407),
@@ -5804,7 +5834,7 @@ class Germany(Locale):
 
 class Ghana(Locale):
     _iso_code = 'GH'
-    english_name = 'Ghana'
+    _english_name = 'Ghana'
     _flag = 'flags\\GH.png'
     languages = [
         English(u'Ghana', lcid=0x1000),
@@ -5816,7 +5846,7 @@ class Ghana(Locale):
 
 class Gibraltar(Locale):
     _iso_code = 'GI'
-    english_name = 'Gibraltar'
+    _english_name = 'Gibraltar'
     _flag = 'flags\\GI.png'
     languages = [
         English(u'Gibraltar', lcid=0x1000)
@@ -5825,7 +5855,7 @@ class Gibraltar(Locale):
 
 class Greece(Locale):
     _iso_code = 'GR'
-    english_name = 'Greece'
+    _english_name = 'Greece'
     _flag = 'flags\\GR.png'
     languages = [
         Greek(u'Ελλάδα', lcid=0x0408)
@@ -5834,7 +5864,7 @@ class Greece(Locale):
 
 class Greenland(Locale):
     _iso_code = 'GL'
-    english_name = 'Greenland'
+    _english_name = 'Greenland'
     _flag = 'flags\\GL.png'
     languages = [
         Danish(u'Grønland', lcid=None),
@@ -5844,7 +5874,7 @@ class Greenland(Locale):
 
 class Grenada(Locale):
     _iso_code = 'GD'
-    english_name = 'Grenada'
+    _english_name = 'Grenada'
     _flag = 'flags\\GD.png'
     languages = [
         English(u'Grenada', lcid=0x1000)
@@ -5853,7 +5883,7 @@ class Grenada(Locale):
 
 class Guadeloupe(Locale):
     _iso_code = 'GP'
-    english_name = 'Guadeloupe'
+    _english_name = 'Guadeloupe'
     _flag = 'flags\\GP.png'
     languages = [
         French(u'Guadeloupe', lcid=None)
@@ -5862,7 +5892,7 @@ class Guadeloupe(Locale):
 
 class Guam(Locale):
     _iso_code = 'GU'
-    english_name = 'Guam'
+    _english_name = 'Guam'
     _flag = 'flags\\GU.png'
     languages = [
         Chamorro(u'Guåhån', lcid=None),
@@ -5872,7 +5902,7 @@ class Guam(Locale):
 
 class Guatemala(Locale):
     _iso_code = 'GT'
-    english_name = 'Guatemala'
+    _english_name = 'Guatemala'
     _flag = 'flags\\GT.png'
     languages = [
         Spanish(u'Guatemala', lcid=0x100A),
@@ -5882,7 +5912,7 @@ class Guatemala(Locale):
 
 class Guernsey(Locale):
     _iso_code = 'GG'
-    english_name = 'Guernsey'
+    _english_name = 'Guernsey'
     _flag = 'flags\\GG.png'
     languages = [
         English(u'Guernsey', lcid=0x1000)
@@ -5891,7 +5921,7 @@ class Guernsey(Locale):
 
 class Guinea(Locale):
     _iso_code = 'GN'
-    english_name = 'Guinea'
+    _english_name = 'Guinea'
     _flag = 'flags\\GN.png'
     languages = [
         French(u'Guinée', lcid=None),
@@ -5902,7 +5932,7 @@ class Guinea(Locale):
 
 class GuineaBissau(Locale):
     _iso_code = 'GW'
-    english_name = 'Guinea Bissau'
+    _english_name = 'Guinea Bissau'
     _flag = 'flags\\GW.png'
     languages = [
         Portuguese(u'Guiné-Bissau', lcid=None)
@@ -5911,7 +5941,7 @@ class GuineaBissau(Locale):
 
 class Guyana(Locale):
     _iso_code = 'GY'
-    english_name = 'Guyana'
+    _english_name = 'Guyana'
     _flag = 'flags\\GY.png'
     languages = [
         English(u'Guyana', lcid=0x1000)
@@ -5920,7 +5950,7 @@ class Guyana(Locale):
 
 class Haiti(Locale):
     _iso_code = 'HT'
-    english_name = 'Haiti'
+    _english_name = 'Haiti'
     _flag = 'flags\\HT.png'
     languages = [
         French(u'Haïti', lcid=None),
@@ -5930,7 +5960,7 @@ class Haiti(Locale):
 
 class HeardIslandandMcDonaldIslands(Locale):
     _iso_code = 'HM'
-    english_name = 'Heard Island and McDonald Islands'
+    _english_name = 'Heard Island and McDonald Islands'
     _flag = 'flags\\HM.png'
     languages = [
         English(u'Heard Island and McDonald Islands', lcid=0x1000)
@@ -5939,7 +5969,7 @@ class HeardIslandandMcDonaldIslands(Locale):
 
 class Honduras(Locale):
     _iso_code = 'HN'
-    english_name = 'Honduras'
+    _english_name = 'Honduras'
     _flag = 'flags\\HN.png'
     languages = [
         Spanish(u'Honduras', lcid=0x480A)
@@ -5948,7 +5978,7 @@ class Honduras(Locale):
 
 class HongKong(Locale):
     _iso_code = 'HK'
-    english_name = 'Hong Kong (SAR of China)'
+    _english_name = 'Hong Kong (SAR of China)'
     _flag = 'flags\\HK.png'
     languages = [
         English(u'Hong Kong', lcid=0x1000),
@@ -5958,7 +5988,7 @@ class HongKong(Locale):
 
 class Hungary(Locale):
     _iso_code = 'HU'
-    english_name = 'Hungary'
+    _english_name = 'Hungary'
     _flag = 'flags\\HU.png'
     languages = [
         Hungarian(u'Magyarország', lcid=0x040E)
@@ -5967,7 +5997,7 @@ class Hungary(Locale):
 
 class Iceland(Locale):
     _iso_code = 'IS'
-    english_name = 'Iceland'
+    _english_name = 'Iceland'
     _flag = 'flags\\IS.png'
     languages = [
         Icelandic(u'Ísland', lcid=0x040F)
@@ -5976,7 +6006,7 @@ class Iceland(Locale):
 
 class India(Locale):
     _iso_code = 'IN'
-    english_name = 'India'
+    _english_name = 'India'
     _flag = 'flags\\IN.png'
     languages = [
         English(u'India', lcid=0x4009),
@@ -6003,7 +6033,7 @@ class India(Locale):
 
 class Indonesia(Locale):
     _iso_code = 'ID'
-    english_name = 'Indonesia'
+    _english_name = 'Indonesia'
     _flag = 'flags\\ID.png'
     languages = [
         Indonesian(u'Indonesia', lcid=0x0421),
@@ -6013,7 +6043,7 @@ class Indonesia(Locale):
 
 class Iran(Locale):
     _iso_code = 'IR'
-    english_name = 'Iran'
+    _english_name = 'Iran'
     _flag = 'flags\\IR.png'
     languages = [
         Persian(u'ایران', lcid=0x0429),
@@ -6025,7 +6055,7 @@ class Iran(Locale):
 
 class Iraq(Locale):
     _iso_code = 'IQ'
-    english_name = 'Iraq'
+    _english_name = 'Iraq'
     _flag = 'flags\\IQ.png'
     languages = [
         Arabic(u'العراق', lcid=0x0801),
@@ -6037,7 +6067,7 @@ class Iraq(Locale):
 
 class Ireland(Locale):
     _iso_code = 'IE'
-    english_name = 'Ireland'
+    _english_name = 'Ireland'
     _flag = 'flags\\IE.png'
     languages = [
         English(u'Ireland', lcid=0x1809),
@@ -6047,7 +6077,7 @@ class Ireland(Locale):
 
 class IsleofMan(Locale):
     _iso_code = 'IM'
-    english_name = 'Isle of Man'
+    _english_name = 'Isle of Man'
     _flag = 'flags\\IM.png'
     languages = [
         English(u'Isle of Man', lcid=0x1000),
@@ -6057,7 +6087,7 @@ class IsleofMan(Locale):
 
 class Israel(Locale):
     _iso_code = 'IL'
-    english_name = 'Israel'
+    _english_name = 'Israel'
     _flag = 'flags\\IL.png'
     languages = [
         Hebrew(u'ישראל', lcid=0x040D),
@@ -6068,7 +6098,7 @@ class Israel(Locale):
 
 class Italia(Locale):
     _iso_code = 'IT'
-    english_name = 'Italia'
+    _english_name = 'Italia'
     _flag = 'flags\\IT.png'
     languages = [
         German(u'Italia', lcid=None),
@@ -6081,7 +6111,7 @@ class Italia(Locale):
 
 class IvoryCoast(Locale):
     _iso_code = 'CI'
-    english_name = 'Ivory Coast'
+    _english_name = 'Ivory Coast'
     _flag = 'flags\\CI.png'
     languages = [
         French(u'Côte d\'Ivoire', lcid=None)
@@ -6090,7 +6120,7 @@ class IvoryCoast(Locale):
 
 class Jamaica(Locale):
     _iso_code = 'JM'
-    english_name = 'Jamaica'
+    _english_name = 'Jamaica'
     _flag = 'flags\\JM.png'
     languages = [
         English(u'Jamaica', lcid=0x2009)
@@ -6099,7 +6129,7 @@ class Jamaica(Locale):
 
 class Japan(Locale):
     _iso_code = 'JP'
-    english_name = 'Japan'
+    _english_name = 'Japan'
     _flag = 'flags\\JP.png'
     languages = [
         Japanese(u'日本', lcid=0x0411)
@@ -6108,7 +6138,7 @@ class Japan(Locale):
 
 class Jersey(Locale):
     _iso_code = 'JE'
-    english_name = 'Jersey'
+    _english_name = 'Jersey'
     _flag = 'flags\\JE.png'
     languages = [
         English(u'Jersey', lcid=0x1000)
@@ -6117,7 +6147,7 @@ class Jersey(Locale):
 
 class Jordan(Locale):
     _iso_code = 'JO'
-    english_name = 'Jordan'
+    _english_name = 'Jordan'
     _flag = 'flags\\JO.png'
     languages = [
         Arabic(u'الأردن', lcid=0x2C01)
@@ -6126,7 +6156,7 @@ class Jordan(Locale):
 
 class Kazakhstan(Locale):
     _iso_code = 'KZ'
-    english_name = 'Kazakhstan'
+    _english_name = 'Kazakhstan'
     _flag = 'flags\\KZ.png'
     languages = [
         Kazakh(u'Қазақстан', lcid=0x043F),
@@ -6136,7 +6166,7 @@ class Kazakhstan(Locale):
 
 class Kenya(Locale):
     _iso_code = 'KE'
-    english_name = 'Kenya'
+    _english_name = 'Kenya'
     _flag = 'flags\\KE.png'
     languages = [
         English(u'Kenya', lcid=0x1000),
@@ -6160,7 +6190,7 @@ class Kenya(Locale):
 
 class Kiribati(Locale):
     _iso_code = 'KI'
-    english_name = 'Kiribati'
+    _english_name = 'Kiribati'
     _flag = 'flags\\KI.png'
     languages = [
         English(u'Kiribati', lcid=0x1000)
@@ -6169,7 +6199,7 @@ class Kiribati(Locale):
 
 class Kuweit(Locale):
     _iso_code = 'KW'
-    english_name = 'Kuweit'
+    _english_name = 'Kuweit'
     _flag = 'flags\\KW.png'
     languages = [
         Arabic(u'دولة الكويت', lcid=0x3401)
@@ -6178,7 +6208,7 @@ class Kuweit(Locale):
 
 class Kyrgyzstan(Locale):
     _iso_code = 'KG'
-    english_name = 'Kyrgyzstan'
+    _english_name = 'Kyrgyzstan'
     _flag = 'flags\\KG.png'
     languages = [
         Kyrgyz(u'Кыргызстан', lcid=0x0440),
@@ -6188,7 +6218,7 @@ class Kyrgyzstan(Locale):
 
 class Laos(Locale):
     _iso_code = 'LA'
-    english_name = 'Laos'
+    _english_name = 'Laos'
     _flag = 'flags\\LA.png'
     languages = [
         Lao(u'ປະເທດລາວ', lcid=0x0454)
@@ -6197,7 +6227,7 @@ class Laos(Locale):
 
 class LatinAmerica(Locale):
     _iso_code = '419'
-    english_name = 'Latin America'
+    _english_name = 'Latin America'
     _flag = None
     languages = [
         Spanish(u'', lcid=0x000A)
@@ -6206,7 +6236,7 @@ class LatinAmerica(Locale):
 
 class Latvia(Locale):
     _iso_code = 'LV'
-    english_name = 'Latvia'
+    _english_name = 'Latvia'
     _flag = 'flags\\LV.png'
     languages = [
         Latvian(u'Latvija', lcid=0x0426)
@@ -6215,7 +6245,7 @@ class Latvia(Locale):
 
 class Lebanon(Locale):
     _iso_code = 'LB'
-    english_name = 'Lebanon'
+    _english_name = 'Lebanon'
     _flag = 'flags\\LB.png'
     languages = [
         Arabic(u'لبنان', lcid=0x3001),
@@ -6225,7 +6255,7 @@ class Lebanon(Locale):
 
 class Lesotho(Locale):
     _iso_code = 'LS'
-    english_name = 'Lesotho'
+    _english_name = 'Lesotho'
     _flag = 'flags\\LS.png'
     languages = [
         English(u'Lesotho', lcid=0x1000),
@@ -6236,7 +6266,7 @@ class Lesotho(Locale):
 
 class Liberia(Locale):
     _iso_code = 'LR'
-    english_name = 'Liberia'
+    _english_name = 'Liberia'
     _flag = 'flags\\LR.png'
     languages = [
         English(u'Liberia', lcid=0x1000),
@@ -6247,7 +6277,7 @@ class Liberia(Locale):
 
 class Libya(Locale):
     _iso_code = 'LY'
-    english_name = 'Libya'
+    _english_name = 'Libya'
     _flag = 'flags\\LY.png'
     languages = [
         Arabic(u'ليبيا', lcid=0x1001)
@@ -6256,7 +6286,7 @@ class Libya(Locale):
 
 class Liechtenstein(Locale):
     _iso_code = 'LI'
-    english_name = 'Liechtenstein'
+    _english_name = 'Liechtenstein'
     _flag = 'flags\\LI.png'
     languages = [
         German(u'Liechtenstein', lcid=0x1407),
@@ -6266,7 +6296,7 @@ class Liechtenstein(Locale):
 
 class Lithuania(Locale):
     _iso_code = 'LT'
-    english_name = 'Lithuania'
+    _english_name = 'Lithuania'
     _flag = 'flags\\LT.png'
     languages = [
         Lithuanian(u'Lietuva', lcid=0x0427)
@@ -6275,7 +6305,7 @@ class Lithuania(Locale):
 
 class Luxembourg(Locale):
     _iso_code = 'LU'
-    english_name = 'Luxembourg'
+    _english_name = 'Luxembourg'
     _flag = 'flags\\LU.png'
     languages = [
         German(u'Luxemburg', lcid=0x1007),
@@ -6287,7 +6317,7 @@ class Luxembourg(Locale):
 
 class Macau(Locale):
     _iso_code = 'MO'
-    english_name = 'Macau (SAR of China)'
+    _english_name = 'Macau (SAR of China)'
     _flag = 'flags\\MO.png'
     languages = [
         Portuguese(u'Macau', lcid=None),
@@ -6298,7 +6328,7 @@ class Macau(Locale):
 
 class Macedonia(Locale):
     _iso_code = 'MK'
-    english_name = 'Macedonia (Former Yugoslav Republic of)'
+    _english_name = 'Macedonia (Former Yugoslav Republic of)'
     _flag = 'flags\\MK.png'
     languages = [
         Macedonian(u'Македонија', lcid=0x042F),
@@ -6308,7 +6338,7 @@ class Macedonia(Locale):
 
 class Madagascar(Locale):
     _iso_code = 'MG'
-    english_name = 'Madagascar'
+    _english_name = 'Madagascar'
     _flag = 'flags\\MG.png'
     languages = [
         French(u'Madagascar', lcid=None),
@@ -6319,7 +6349,7 @@ class Madagascar(Locale):
 
 class Malawi(Locale):
     _iso_code = 'MW'
-    english_name = 'Malawi'
+    _english_name = 'Malawi'
     _flag = 'flags\\MW.png'
     languages = [
         English(u'Malawi', lcid=0x1000),
@@ -6329,7 +6359,7 @@ class Malawi(Locale):
 
 class Malaysia(Locale):
     _iso_code = 'MY'
-    english_name = 'Malaysia'
+    _english_name = 'Malaysia'
     _flag = 'flags\\MY.png'
     languages = [
         Malay(u'Malaysia', lcid=0x043E),
@@ -6340,7 +6370,7 @@ class Malaysia(Locale):
 
 class Maldives(Locale):
     _iso_code = 'MV'
-    english_name = 'Maldives'
+    _english_name = 'Maldives'
     _flag = 'flags\\MV.png'
     languages = [
         Divehi(u'ދިވެހިރާއްޖެ', lcid=0x0465)
@@ -6349,7 +6379,7 @@ class Maldives(Locale):
 
 class Mali(Locale):
     _iso_code = 'ML'
-    english_name = 'Mali'
+    _english_name = 'Mali'
     _flag = 'flags\\ML.png'
     languages = [
         French(u'Mali', lcid=None),
@@ -6361,7 +6391,7 @@ class Mali(Locale):
 
 class Malta(Locale):
     _iso_code = 'MT'
-    english_name = 'Malta'
+    _english_name = 'Malta'
     _flag = 'flags\\MT.png'
     languages = [
         English(u'Malta', lcid=0x1000),
@@ -6371,7 +6401,7 @@ class Malta(Locale):
 
 class MarshallIslands(Locale):
     _iso_code = 'MH'
-    english_name = 'Marshall Islands'
+    _english_name = 'Marshall Islands'
     _flag = 'flags\\MH.png'
     languages = [
         English(u'Marshall Islands', lcid=0x1000),
@@ -6381,7 +6411,7 @@ class MarshallIslands(Locale):
 
 class Martinique(Locale):
     _iso_code = 'MQ'
-    english_name = 'Martinique'
+    _english_name = 'Martinique'
     _flag = 'flags\\MQ.png'
     languages = [
         French(u'Martinique', lcid=None)
@@ -6390,7 +6420,7 @@ class Martinique(Locale):
 
 class Mauritania(Locale):
     _iso_code = 'MR'
-    english_name = 'Mauritania'
+    _english_name = 'Mauritania'
     _flag = 'flags\\MR.png'
     languages = [
         Arabic(u'موريتانيا', lcid=None),
@@ -6401,7 +6431,7 @@ class Mauritania(Locale):
 
 class Mauritius(Locale):
     _iso_code = 'MU'
-    english_name = 'Mauritius'
+    _english_name = 'Mauritius'
     _flag = 'flags\\MU.png'
     languages = [
         English(u'Mauritius', lcid=0x1000),
@@ -6412,7 +6442,7 @@ class Mauritius(Locale):
 
 class Mayotte(Locale):
     _iso_code = 'YT'
-    english_name = 'Mayotte'
+    _english_name = 'Mayotte'
     _flag = 'flags\\YT.png'
     languages = [
         French(u'Mayotte', lcid=None)
@@ -6421,7 +6451,7 @@ class Mayotte(Locale):
 
 class Mexico(Locale):
     _iso_code = 'MX'
-    english_name = 'Mexico'
+    _english_name = 'Mexico'
     _flag = 'flags\\MX.png'
     languages = [
         Spanish(u'México', lcid=0x080A)
@@ -6430,7 +6460,7 @@ class Mexico(Locale):
 
 class Micronesia(Locale):
     _iso_code = 'FM'
-    english_name = 'Micronesia (Federated States of)'
+    _english_name = 'Micronesia (Federated States of)'
     _flag = 'flags\\FM.png'
     languages = [
         English(u'Micronesia', lcid=0x1000)
@@ -6439,7 +6469,7 @@ class Micronesia(Locale):
 
 class Moldova(Locale):
     _iso_code = 'MD'
-    english_name = 'Moldova'
+    _english_name = 'Moldova'
     _flag = 'flags\\MD.png'
     languages = [
         Romanian(u'Moldova', lcid=None),
@@ -6450,7 +6480,7 @@ class Moldova(Locale):
 
 class Monaco(Locale):
     _iso_code = 'MC'
-    english_name = 'Monaco'
+    _english_name = 'Monaco'
     _flag = 'flags\\MC.png'
     languages = [
         French(u'Monaco', lcid=0x180C)
@@ -6459,7 +6489,7 @@ class Monaco(Locale):
 
 class Mongolia(Locale):
     _iso_code = 'MN'
-    english_name = 'Mongolia'
+    _english_name = 'Mongolia'
     _flag = 'flags\\MN.png'
     languages = [
         Mongolian(u'ᠮᠤᠩᠭᠤᠯ ᠤᠯᠤᠰ', lcid=0x0450)
@@ -6468,7 +6498,7 @@ class Mongolia(Locale):
 
 class Montenegro(Locale):
     _iso_code = 'ME'
-    english_name = 'Montenegro'
+    _english_name = 'Montenegro'
     _flag = 'flags\\ME.png'
     languages = [
         BosnianCyrillic(u'Crna Gora', lcid=None),
@@ -6481,7 +6511,7 @@ class Montenegro(Locale):
 
 class Montserrat(Locale):
     _iso_code = 'MS'
-    english_name = 'Montserrat'
+    _english_name = 'Montserrat'
     _flag = 'flags\\MS.png'
     languages = [
         English(u'Montserrat', lcid=0x1000)
@@ -6490,7 +6520,7 @@ class Montserrat(Locale):
 
 class Morocco(Locale):
     _iso_code = 'MA'
-    english_name = 'Morocco'
+    _english_name = 'Morocco'
     _flag = 'flags\\MA.png'
     languages = [
         Arabic(u'المغرب', lcid=0x1801),
@@ -6504,7 +6534,7 @@ class Morocco(Locale):
 
 class Mozambique(Locale):
     _iso_code = 'MZ'
-    english_name = 'Mozambique'
+    _english_name = 'Mozambique'
     _flag = 'flags\\MZ.png'
     languages = [
         Portuguese(u'Moçambique', lcid=None),
@@ -6515,7 +6545,7 @@ class Mozambique(Locale):
 
 class Myanmar(Locale):
     _iso_code = 'MM'
-    english_name = 'Myanmar'
+    _english_name = 'Myanmar'
     _flag = 'flags\\MM.png'
     languages = [
         Burmese(u'မြန်မာ', lcid=None)
@@ -6524,7 +6554,7 @@ class Myanmar(Locale):
 
 class Namibia(Locale):
     _iso_code = 'NA'
-    english_name = 'Namibia'
+    _english_name = 'Namibia'
     _flag = 'flags\\NA.png'
     languages = [
         German(u'Namibia', lcid=None),
@@ -6536,7 +6566,7 @@ class Namibia(Locale):
 
 class Nepal(Locale):
     _iso_code = 'NP'
-    english_name = 'Nepal'
+    _english_name = 'Nepal'
     _flag = 'flags\\NP.png'
     languages = [
         Nepali(u'Nepāl', lcid=0x0461)
@@ -6545,7 +6575,7 @@ class Nepal(Locale):
 
 class NewCaledonia(Locale):
     _iso_code = 'NC'
-    english_name = 'New Caledonia'
+    _english_name = 'New Caledonia'
     _flag = 'flags\\NC.png'
     languages = [
         French(u'Nouvelle-Calédonie', lcid=None)
@@ -6554,7 +6584,7 @@ class NewCaledonia(Locale):
 
 class NewZealand(Locale):
     _iso_code = 'NZ'
-    english_name = 'New Zealand'
+    _english_name = 'New Zealand'
     _flag = 'flags\\NZ.png'
     languages = [
         English(u'New Zealand', lcid=0x1409),
@@ -6564,7 +6594,7 @@ class NewZealand(Locale):
 
 class Nicaragua(Locale):
     _iso_code = 'NI'
-    english_name = 'Nicaragua'
+    _english_name = 'Nicaragua'
     _flag = 'flags\\NI.png'
     languages = [
         Spanish(u'Nicaragua', lcid=0x4C0A)
@@ -6573,7 +6603,7 @@ class Nicaragua(Locale):
 
 class Niger(Locale):
     _iso_code = 'NE'
-    english_name = 'Niger'
+    _english_name = 'Niger'
     _flag = 'flags\\NE.png'
     languages = [
         French(u'Niger', lcid=None),
@@ -6585,7 +6615,7 @@ class Niger(Locale):
 
 class Nigeria(Locale):
     _iso_code = 'NG'
-    english_name = 'Nigeria'
+    _english_name = 'Nigeria'
     _flag = 'flags\\NG.png'
     languages = [
         English(u'Nigeria', lcid=0x1000),
@@ -6597,7 +6627,7 @@ class Nigeria(Locale):
 
 class Niue(Locale):
     _iso_code = 'NU'
-    english_name = 'Niue'
+    _english_name = 'Niue'
     _flag = 'flags\\NU.png'
     languages = [
         English(u'Niue', lcid=0x1000),
@@ -6607,7 +6637,7 @@ class Niue(Locale):
 
 class NorfolkIsland(Locale):
     _iso_code = 'NF'
-    english_name = 'Norfolk Island'
+    _english_name = 'Norfolk Island'
     _flag = 'flags\\NF.png'
     languages = [
         English(u'Norfolk Island', lcid=0x1000),
@@ -6617,7 +6647,7 @@ class NorfolkIsland(Locale):
 
 class NorthKorea(Locale):
     _iso_code = 'KP'
-    english_name = 'North Korea'
+    _english_name = 'North Korea'
     _flag = 'flags\\KP.png'
     languages = [
         Korean(u'북조선', lcid=None)
@@ -6626,7 +6656,7 @@ class NorthKorea(Locale):
 
 class NorthernMarianaIslands(Locale):
     _iso_code = 'MP'
-    english_name = 'Northern Mariana Islands'
+    _english_name = 'Northern Mariana Islands'
     _flag = 'flags\\MP.png'
     languages = [
         Chamorro(u'Notte Mariånas', lcid=None),
@@ -6636,7 +6666,7 @@ class NorthernMarianaIslands(Locale):
 
 class Norway(Locale):
     _iso_code = 'NO'
-    english_name = 'Norway'
+    _english_name = 'Norway'
     _flag = 'flags\\NO.png'
     languages = [
         NorwegianBokmal(u'Norge', lcid=0x0414),
@@ -6650,7 +6680,7 @@ class Norway(Locale):
 
 class Oman(Locale):
     _iso_code = 'OM'
-    english_name = 'Oman'
+    _english_name = 'Oman'
     _flag = 'flags\\OM.png'
     languages = [
         Arabic(u'عُمان', lcid=0x2001)
@@ -6659,7 +6689,7 @@ class Oman(Locale):
 
 class Pakistan(Locale):
     _iso_code = 'PK'
-    english_name = 'Pakistan'
+    _english_name = 'Pakistan'
     _flag = 'flags\\PK.png'
     languages = [
         English(u'Pakistan', lcid=0x1000),
@@ -6671,7 +6701,7 @@ class Pakistan(Locale):
 
 class Palau(Locale):
     _iso_code = 'PW'
-    english_name = 'Palau'
+    _english_name = 'Palau'
     _flag = 'flags\\PW.png'
     languages = [
         English(u'Palau', lcid=0x1000),
@@ -6683,7 +6713,7 @@ class Palau(Locale):
 
 class PalestinianTerritory(Locale):
     _iso_code = 'PS'
-    english_name = 'Palestinian Territory'
+    _english_name = 'Palestinian Territory'
     _flag = 'flags\\PS.png'
     languages = [
         Arabic(u'فلسطين', lcid=None),
@@ -6693,7 +6723,7 @@ class PalestinianTerritory(Locale):
 
 class Panama(Locale):
     _iso_code = 'PA'
-    english_name = 'Panama'
+    _english_name = 'Panama'
     _flag = 'flags\\PA.png'
     languages = [
         Spanish(u'Panamá', lcid=0x180A)
@@ -6702,7 +6732,7 @@ class Panama(Locale):
 
 class PapuaNewGuinea(Locale):
     _iso_code = 'PG'
-    english_name = 'Papua New Guinea'
+    _english_name = 'Papua New Guinea'
     _flag = 'flags\\PG.png'
     languages = [
         English(u'Papua New Guinea', lcid=0x1000),
@@ -6713,7 +6743,7 @@ class PapuaNewGuinea(Locale):
 
 class Paraguay(Locale):
     _iso_code = 'PY'
-    english_name = 'Paraguay'
+    _english_name = 'Paraguay'
     _flag = 'flags\\PY.png'
     languages = [
         Spanish(u'Paraguay', lcid=0x3C0A),
@@ -6723,7 +6753,7 @@ class Paraguay(Locale):
 
 class Peru(Locale):
     _iso_code = 'PE'
-    english_name = 'Peru'
+    _english_name = 'Peru'
     _flag = 'flags\\PE.png'
     languages = [
         Spanish(u'Perú', lcid=0x280A),
@@ -6733,7 +6763,7 @@ class Peru(Locale):
 
 class Philippines(Locale):
     _iso_code = 'PH'
-    english_name = 'Philippines'
+    _english_name = 'Philippines'
     _flag = 'flags\\PH.png'
     languages = [
         English(u'Philippines', lcid=0x3409),
@@ -6745,7 +6775,7 @@ class Philippines(Locale):
 
 class Pitcairn(Locale):
     _iso_code = 'PN'
-    english_name = 'Pitcairn'
+    _english_name = 'Pitcairn'
     _flag = 'flags\\PN.png'
     languages = [
         English(u'Pitcairn', lcid=0x1000),
@@ -6755,7 +6785,7 @@ class Pitcairn(Locale):
 
 class Poland(Locale):
     _iso_code = 'PL'
-    english_name = 'Poland'
+    _english_name = 'Poland'
     _flag = 'flags\\PL.png'
     languages = [
         Polish(u'Polska', lcid=0x0415)
@@ -6764,7 +6794,7 @@ class Poland(Locale):
 
 class Portugal(Locale):
     _iso_code = 'PT'
-    english_name = 'Portugal'
+    _english_name = 'Portugal'
     _flag = 'flags\\PT.png'
     languages = [
         Portuguese(u'Portugal', lcid=0x0816)
@@ -6773,7 +6803,7 @@ class Portugal(Locale):
 
 class PuertoRico(Locale):
     _iso_code = 'PR'
-    english_name = 'Puerto Rico'
+    _english_name = 'Puerto Rico'
     _flag = 'flags\\PR.png'
     languages = [
         English(u'Puerto Rico', lcid=0x1000),
@@ -6783,7 +6813,7 @@ class PuertoRico(Locale):
 
 class Qatar(Locale):
     _iso_code = 'QA'
-    english_name = 'Qatar'
+    _english_name = 'Qatar'
     _flag = 'flags\\QA.png'
     languages = [
         Arabic(u'قطر', lcid=0x4001)
@@ -6792,7 +6822,7 @@ class Qatar(Locale):
 
 class RepublicCongo(Locale):
     _iso_code = 'CG'
-    english_name = 'Republic of the Congo (Congo-Brazzaville)'
+    _english_name = 'Republic of the Congo (Congo-Brazzaville)'
     _flag = 'flags\\CG.png'
     languages = [
         French(u'République démocratique du Congo', lcid=None),
@@ -6802,7 +6832,7 @@ class RepublicCongo(Locale):
 
 class Reunion(Locale):
     _iso_code = 'RE'
-    english_name = 'Reunion'
+    _english_name = 'Reunion'
     _flag = 'flags\\RE.png'
     languages = [
         French(u'Réunion', lcid=None)
@@ -6811,7 +6841,7 @@ class Reunion(Locale):
 
 class Romania(Locale):
     _iso_code = 'RO'
-    english_name = 'Romania'
+    _english_name = 'Romania'
     _flag = 'flags\\RO.png'
     languages = [
         Romanian(u'România', lcid=0x0418)
@@ -6820,7 +6850,7 @@ class Romania(Locale):
 
 class Russia(Locale):
     _iso_code = 'RU'
-    english_name = 'Russia'
+    _english_name = 'Russia'
     _flag = 'flags\\RU.png'
     languages = [
         Russian(u'Россия', lcid=0x0419),
@@ -6835,7 +6865,7 @@ class Russia(Locale):
 
 class Rwanda(Locale):
     _iso_code = 'RW'
-    english_name = 'Rwanda'
+    _english_name = 'Rwanda'
     _flag = 'flags\\RW.png'
     languages = [
         English(u'Rwanda', lcid=0x1000),
@@ -6846,7 +6876,7 @@ class Rwanda(Locale):
 
 class SaintBarts(Locale):
     _iso_code = 'BL'
-    english_name = 'Saint-Barts'
+    _english_name = 'Saint-Barts'
     _flag = 'flags\\BL.png'
     languages = [
         French(u'Saint-Barthélemy', lcid=None)
@@ -6855,7 +6885,7 @@ class SaintBarts(Locale):
 
 class SaintHelena(Locale):
     _iso_code = 'SH'
-    english_name = 'Saint Helena'
+    _english_name = 'Saint Helena'
     _flag = 'flags\\SH.png'
     languages = [
         English(u'Saint Helena', lcid=0x1000)
@@ -6864,7 +6894,7 @@ class SaintHelena(Locale):
 
 class SaintKittsandNevis(Locale):
     _iso_code = 'KN'
-    english_name = 'Saint Kitts and Nevis'
+    _english_name = 'Saint Kitts and Nevis'
     _flag = 'flags\\KN.png'
     languages = [
         English(u'Saint Kitts and Nevis', lcid=0x1000)
@@ -6873,7 +6903,7 @@ class SaintKittsandNevis(Locale):
 
 class SaintLucia(Locale):
     _iso_code = 'LC'
-    english_name = 'Saint Lucia'
+    _english_name = 'Saint Lucia'
     _flag = 'flags\\LC.png'
     languages = [
         English(u'Saint Lucia', lcid=0x1000)
@@ -6882,7 +6912,7 @@ class SaintLucia(Locale):
 
 class SaintMartinDutch(Locale):
     _iso_code = 'SX'
-    english_name = 'Saint Martin (Dutch part)'
+    _english_name = 'Saint Martin (Dutch part)'
     _flag = 'flags\\SX.png'
     languages = [
         English(u'Saint Martin', lcid=0x1000),
@@ -6892,7 +6922,7 @@ class SaintMartinDutch(Locale):
 
 class SaintMartinFrench(Locale):
     _iso_code = 'MF'
-    english_name = 'Saint Martin (French part)'
+    _english_name = 'Saint Martin (French part)'
     _flag = 'flags\\MF.png'
     languages = [
         French(u'Saint-Martin', lcid=None)
@@ -6901,7 +6931,7 @@ class SaintMartinFrench(Locale):
 
 class SaintPierreandMiquelon(Locale):
     _iso_code = 'PM'
-    english_name = 'Saint Pierre and Miquelon'
+    _english_name = 'Saint Pierre and Miquelon'
     _flag = 'flags\\PM.png'
     languages = [
         French(u'Saint-Pierre et Miquelon', lcid=None)
@@ -6910,7 +6940,7 @@ class SaintPierreandMiquelon(Locale):
 
 class SaintVincentandtheGrenadines(Locale):
     _iso_code = 'VC'
-    english_name = 'Saint Vincent and the Grenadines'
+    _english_name = 'Saint Vincent and the Grenadines'
     _flag = 'flags\\VC.png'
     languages = [
         English(u'Saint Vincent and the Grenadines', lcid=0x1000)
@@ -6919,7 +6949,7 @@ class SaintVincentandtheGrenadines(Locale):
 
 class Samoa(Locale):
     _iso_code = 'WS'
-    english_name = 'Samoa'
+    _english_name = 'Samoa'
     _flag = 'flags\\WS.png'
     languages = [
         English(u'Samoa', lcid=0x1000),
@@ -6929,7 +6959,7 @@ class Samoa(Locale):
 
 class SanMarino(Locale):
     _iso_code = 'SM'
-    english_name = 'San Marino'
+    _english_name = 'San Marino'
     _flag = 'flags\\SM.png'
     languages = [
         Italian(u'San Marino', lcid=None)
@@ -6938,7 +6968,7 @@ class SanMarino(Locale):
 
 class SaoTomeandPrincipe(Locale):
     _iso_code = 'ST'
-    english_name = 'São Tomé and Príncipe'
+    _english_name = 'São Tomé and Príncipe'
     _flag = 'flags\\ST.png'
     languages = [
         Portuguese(u'São Tomé e Príncipe', lcid=None)
@@ -6947,7 +6977,7 @@ class SaoTomeandPrincipe(Locale):
 
 class SaudiArabia(Locale):
     _iso_code = 'SA'
-    english_name = 'Saudi Arabia'
+    _english_name = 'Saudi Arabia'
     _flag = 'flags\\SA.png'
     languages = [
         Arabic(u'المملكة العربية السعودية', lcid=0x0401)
@@ -6956,7 +6986,7 @@ class SaudiArabia(Locale):
 
 class Senegal(Locale):
     _iso_code = 'SN'
-    english_name = 'Senegal'
+    _english_name = 'Senegal'
     _flag = 'flags\\SN.png'
     languages = [
         French(u'Sénégal', lcid=None),
@@ -6968,7 +6998,7 @@ class Senegal(Locale):
 
 class Serbia(Locale):
     _iso_code = 'RS'
-    english_name = 'Serbia'
+    _english_name = 'Serbia'
     _flag = 'flags\\RS.png'
     languages = [
         SerbianCyrillic(u'Србија', lcid=None),
@@ -6978,7 +7008,7 @@ class Serbia(Locale):
 
 class SerbiaMontenegro(Locale):
     _iso_code = 'CS'
-    english_name = 'Serbia and Montenegro (Former)'
+    _english_name = 'Serbia and Montenegro (Former)'
     _flag = None
     languages = [
         SerbianCyrillic(u'', lcid=0x1C1A),
@@ -6988,7 +7018,7 @@ class SerbiaMontenegro(Locale):
 
 class Seychelles(Locale):
     _iso_code = 'SC'
-    english_name = 'Seychelles'
+    _english_name = 'Seychelles'
     _flag = 'flags\\SC.png'
     languages = [
         SeychelloisCreole(u'Sesel', lcid=None),
@@ -6999,7 +7029,7 @@ class Seychelles(Locale):
 
 class SierraLeone(Locale):
     _iso_code = 'SL'
-    english_name = 'Sierra Leone'
+    _english_name = 'Sierra Leone'
     _flag = 'flags\\SL.png'
     languages = [
         English(u'Sierra Leone', lcid=0x1000)
@@ -7008,7 +7038,7 @@ class SierraLeone(Locale):
 
 class Singapore(Locale):
     _iso_code = 'SG'
-    english_name = 'Singapore'
+    _english_name = 'Singapore'
     _flag = 'flags\\SG.png'
     languages = [
         English(u'Singapore', lcid=0x4809),
@@ -7020,7 +7050,7 @@ class Singapore(Locale):
 
 class Slovakia(Locale):
     _iso_code = 'SK'
-    english_name = 'Slovakia'
+    _english_name = 'Slovakia'
     _flag = 'flags\\SK.png'
     languages = [
         Slovak(u'Slovensko', lcid=0x041B)
@@ -7029,7 +7059,7 @@ class Slovakia(Locale):
 
 class Slovenia(Locale):
     _iso_code = 'SI'
-    english_name = 'Slovenia'
+    _english_name = 'Slovenia'
     _flag = 'flags\\SI.png'
     languages = [
         Slovenian(u'Slovenija', lcid=0x0424),
@@ -7039,7 +7069,7 @@ class Slovenia(Locale):
 
 class SolomonIslands(Locale):
     _iso_code = 'SB'
-    english_name = 'Solomon Islands'
+    _english_name = 'Solomon Islands'
     _flag = 'flags\\SB.png'
     languages = [
         English(u'Solomon Islands', lcid=0x1000)
@@ -7048,7 +7078,7 @@ class SolomonIslands(Locale):
 
 class Somalia(Locale):
     _iso_code = 'SO'
-    english_name = 'Somalia'
+    _english_name = 'Somalia'
     _flag = 'flags\\SO.png'
     languages = [
         Arabic(u'الصومال', lcid=None),
@@ -7058,7 +7088,7 @@ class Somalia(Locale):
 
 class SouthAfrica(Locale):
     _iso_code = 'ZA'
-    english_name = 'South Africa'
+    _english_name = 'South Africa'
     _flag = 'flags\\ZA.png'
     languages = [
         Afrikaans(u'Suid-Afrika', lcid=0x0436),
@@ -7077,7 +7107,7 @@ class SouthAfrica(Locale):
 
 class SouthGeorgiaandtheSouthSandwichIslands(Locale):
     _iso_code = 'GS'
-    english_name = 'South Georgia and the South Sandwich Islands'
+    _english_name = 'South Georgia and the South Sandwich Islands'
     _flag = 'flags\\GS.png'
     languages = [
         English(u'South Georgia and the South Sandwich Islands', lcid=0x1000)
@@ -7086,7 +7116,7 @@ class SouthGeorgiaandtheSouthSandwichIslands(Locale):
 
 class SouthKorea(Locale):
     _iso_code = 'KR'
-    english_name = 'South Korea'
+    _english_name = 'South Korea'
     _flag = 'flags\\KR.png'
     languages = [
         English(u'South Korea', lcid=0x1000),
@@ -7096,7 +7126,7 @@ class SouthKorea(Locale):
 
 class SouthSudan(Locale):
     _iso_code = 'SS'
-    english_name = 'South Sudan'
+    _english_name = 'South Sudan'
     _flag = 'flags\\SS.png'
     languages = [
         English(u'South Sudan', lcid=0x1000),
@@ -7106,7 +7136,7 @@ class SouthSudan(Locale):
 
 class Spain(Locale):
     _iso_code = 'ES'
-    english_name = 'Spain'
+    _english_name = 'Spain'
     _flag = 'flags\\ES.png'
     languages = [
         Asturian(u'España', lcid=None),
@@ -7119,7 +7149,7 @@ class Spain(Locale):
 
 class SriLanka(Locale):
     _iso_code = 'LK'
-    english_name = 'Sri Lanka'
+    _english_name = 'Sri Lanka'
     _flag = 'flags\\LK.png'
     languages = [
         Sinhala(u'ශ්‍රී ලංකාව', lcid=0x045B),
@@ -7129,7 +7159,7 @@ class SriLanka(Locale):
 
 class Sudan(Locale):
     _iso_code = 'SD'
-    english_name = 'Sudan'
+    _english_name = 'Sudan'
     _flag = 'flags\\SD.png'
     languages = [
         Arabic(u'السودان', lcid=None),
@@ -7140,7 +7170,7 @@ class Sudan(Locale):
 
 class Suriname(Locale):
     _iso_code = 'SR'
-    english_name = 'Suriname'
+    _english_name = 'Suriname'
     _flag = 'flags\\SR.png'
     languages = [
         Dutch(u'Suriname', lcid=None)
@@ -7149,7 +7179,7 @@ class Suriname(Locale):
 
 class SvalbardandJanMayen(Locale):
     _iso_code = 'SJ'
-    english_name = 'Svalbard and Jan Mayen'
+    _english_name = 'Svalbard and Jan Mayen'
     _flag = 'flags\\SJ.png'
     languages = [
         Norwegian(u'Svalbard og Jan Mayen', lcid=None),
@@ -7159,7 +7189,7 @@ class SvalbardandJanMayen(Locale):
 
 class Swaziland(Locale):
     _iso_code = 'SZ'
-    english_name = 'Swaziland'
+    _english_name = 'Swaziland'
     _flag = 'flags\\SZ.png'
     languages = [
         English(u'Swaziland', lcid=0x1000),
@@ -7169,7 +7199,7 @@ class Swaziland(Locale):
 
 class Sweden(Locale):
     _iso_code = 'SE'
-    english_name = 'Sweden'
+    _english_name = 'Sweden'
     _flag = 'flags\\SE.png'
     languages = [
         Swedish(u'Sverige', lcid=0x041D),
@@ -7182,7 +7212,7 @@ class Sweden(Locale):
 
 class Switzerland(Locale):
     _iso_code = 'CH'
-    english_name = 'Switzerland'
+    _english_name = 'Switzerland'
     _flag = 'flags\\CH.png'
     languages = [
         German(u'Schweiz', lcid=0x0807),
@@ -7198,7 +7228,7 @@ class Switzerland(Locale):
 
 class Syria(Locale):
     _iso_code = 'SY'
-    english_name = 'Syria'
+    _english_name = 'Syria'
     _flag = 'flags\\SY.png'
     languages = [
         Arabic(u'سورية', lcid=0x2801),
@@ -7210,7 +7240,7 @@ class Syria(Locale):
 
 class Taiwan(Locale):
     _iso_code = 'TW'
-    english_name = 'Taiwan'
+    _english_name = 'Taiwan'
     _flag = 'flags\\TW.png'
     languages = [
         ChineseTraditional(u'中華民國', lcid=0x0404)
@@ -7219,7 +7249,7 @@ class Taiwan(Locale):
 
 class Tajikistan(Locale):
     _iso_code = 'TJ'
-    english_name = 'Tajikistan'
+    _english_name = 'Tajikistan'
     _flag = 'flags\\TJ.png'
     languages = [
         Russian(u'Таджикистан', lcid=None),
@@ -7229,7 +7259,7 @@ class Tajikistan(Locale):
 
 class Tanzania(Locale):
     _iso_code = 'TZ'
-    english_name = 'Tanzania'
+    _english_name = 'Tanzania'
     _flag = 'flags\\TZ.png'
     languages = [
         English(u'Tanzania', lcid=0x1000),
@@ -7250,7 +7280,7 @@ class Tanzania(Locale):
 
 class Thailand(Locale):
     _iso_code = 'TH'
-    english_name = 'Thailand'
+    _english_name = 'Thailand'
     _flag = 'flags\\TH.png'
     languages = [
         Thai(u'เมืองไทย', lcid=0x041E)
@@ -7259,7 +7289,7 @@ class Thailand(Locale):
 
 class TheGambia(Locale):
     _iso_code = 'GM'
-    english_name = 'The Gambia'
+    _english_name = 'The Gambia'
     _flag = 'flags\\GM.png'
     languages = [
         English(u'The Gambia', lcid=0x1000)
@@ -7268,7 +7298,7 @@ class TheGambia(Locale):
 
 class TheNetherlands(Locale):
     _iso_code = 'NL'
-    english_name = 'The Netherlands'
+    _english_name = 'The Netherlands'
     _flag = 'flags\\NL.png'
     languages = [
         Dutch(u'Nederland', lcid=0x0413),
@@ -7280,7 +7310,7 @@ class TheNetherlands(Locale):
 
 class Tifinagh(Locale):
     _iso_code = 'Tfng'
-    english_name = 'Tifinagh'
+    _english_name = 'Tifinagh'
     _flag = None
     languages = [
         StandardMoroccanTamazight(u'', lcid=0x1000),
@@ -7290,7 +7320,7 @@ class Tifinagh(Locale):
 
 class TimorLeste(Locale):
     _iso_code = 'TL'
-    english_name = 'Timor-Leste'
+    _english_name = 'Timor-Leste'
     _flag = 'flags\\TL.png'
     languages = [
         Portuguese(u'Timor-Leste', lcid=0x1000),
@@ -7300,7 +7330,7 @@ class TimorLeste(Locale):
 
 class Togo(Locale):
     _iso_code = 'TG'
-    english_name = 'Togo'
+    _english_name = 'Togo'
     _flag = 'flags\\TG.png'
     languages = [
         French(u'Togo', lcid=0x1000),
@@ -7310,7 +7340,7 @@ class Togo(Locale):
 
 class Tokelau(Locale):
     _iso_code = 'TK'
-    english_name = 'Tokelau'
+    _english_name = 'Tokelau'
     _flag = 'flags\\TK.png'
     languages = [
         English(u'Tokelau', lcid=0x1000),
@@ -7321,7 +7351,7 @@ class Tokelau(Locale):
 
 class Tonga(Locale):
     _iso_code = 'TO'
-    english_name = 'Tonga'
+    _english_name = 'Tonga'
     _flag = 'flags\\TO.png'
     languages = [
         English(u'Tonga', lcid=0x1000),
@@ -7331,7 +7361,7 @@ class Tonga(Locale):
 
 class TrinidadandTobago(Locale):
     _iso_code = 'TT'
-    english_name = 'Trinidad and Tobago'
+    _english_name = 'Trinidad and Tobago'
     _flag = 'flags\\TT.png'
     languages = [
         English(u'Trinidad and Tobago', lcid=0x2C09)
@@ -7340,7 +7370,7 @@ class TrinidadandTobago(Locale):
 
 class Tunisia(Locale):
     _iso_code = 'TN'
-    english_name = 'Tunisia'
+    _english_name = 'Tunisia'
     _flag = 'flags\\TN.png'
     languages = [
         Arabic(u'تونس', lcid=0x1C01),
@@ -7350,7 +7380,7 @@ class Tunisia(Locale):
 
 class Turkey(Locale):
     _iso_code = 'TR'
-    english_name = 'Turkey'
+    _english_name = 'Turkey'
     _flag = 'flags\\TR.png'
     languages = [
         Turkish(u'Türkiye', lcid=0x041F)
@@ -7359,7 +7389,7 @@ class Turkey(Locale):
 
 class Turkmenistan(Locale):
     _iso_code = 'TM'
-    english_name = 'Turkmenistan'
+    _english_name = 'Turkmenistan'
     _flag = 'flags\\TM.png'
     languages = [
         Turkmen(u'Türkmenistan', lcid=0x0442)
@@ -7368,7 +7398,7 @@ class Turkmenistan(Locale):
 
 class TurksandCaicosIslands(Locale):
     _iso_code = 'TC'
-    english_name = 'Turks and Caicos Islands'
+    _english_name = 'Turks and Caicos Islands'
     _flag = 'flags\\TC.png'
     languages = [
         English(u'Turks and Caicos Islands', lcid=0x1000)
@@ -7377,7 +7407,7 @@ class TurksandCaicosIslands(Locale):
 
 class Tuvalu(Locale):
     _iso_code = 'TV'
-    english_name = 'Tuvalu'
+    _english_name = 'Tuvalu'
     _flag = 'flags\\TV.png'
     languages = [
         English(u'Tuvalu', lcid=0x1000)
@@ -7386,7 +7416,7 @@ class Tuvalu(Locale):
 
 class Uganda(Locale):
     _iso_code = 'UG'
-    english_name = 'Uganda'
+    _english_name = 'Uganda'
     _flag = 'flags\\UG.png'
     languages = [
         English(u'Uganda', lcid=0x1000),
@@ -7401,7 +7431,7 @@ class Uganda(Locale):
 
 class Ukraine(Locale):
     _iso_code = 'UA'
-    english_name = 'Ukraine'
+    _english_name = 'Ukraine'
     _flag = 'flags\\UA.png'
     languages = [
         Ukrainian(u'Україна', lcid=0x0422),
@@ -7411,7 +7441,7 @@ class Ukraine(Locale):
 
 class UnitedArabEmirates(Locale):
     _iso_code = 'AE'
-    english_name = 'United Arab Emirates'
+    _english_name = 'United Arab Emirates'
     _flag = 'flags\\AE.png'
     languages = [
         Arabic(u'الإمارات العربيّة المتّحدة', lcid=0x3801),
@@ -7421,7 +7451,7 @@ class UnitedArabEmirates(Locale):
 
 class UnitedKingdom(Locale):
     _iso_code = 'GB'
-    english_name = 'United Kingdom'
+    _english_name = 'United Kingdom'
     _flag = 'flags\\GB.png'
     languages = [
         Welsh(u'Y Deyrnas Unedig', lcid=0x0452),
@@ -7434,7 +7464,7 @@ class UnitedKingdom(Locale):
 
 class UnitedStatesMinorOutlyingIslands(Locale):
     _iso_code = 'UM'
-    english_name = 'United States Minor Outlying Islands'
+    _english_name = 'United States Minor Outlying Islands'
     _flag = 'flags\\UM.png'
     languages = [
         English(u'United States Minor Outlying Islands', lcid=0x1000)
@@ -7443,7 +7473,7 @@ class UnitedStatesMinorOutlyingIslands(Locale):
 
 class UnitedStatesVirginIslands(Locale):
     _iso_code = 'VI'
-    english_name = 'United States Virgin Islands'
+    _english_name = 'United States Virgin Islands'
     _flag = 'flags\\VI.png'
     languages = [
         English(u'United States Virgin Islands', lcid=0x1000)
@@ -7452,7 +7482,7 @@ class UnitedStatesVirginIslands(Locale):
 
 class UnitedStatesofAmerica(Locale):
     _iso_code = 'US'
-    english_name = 'United States of America'
+    _english_name = 'United States of America'
     _flag = 'flags\\US.png'
     languages = [
         English(u'United States of America', lcid=0x0409),
@@ -7465,7 +7495,7 @@ class UnitedStatesofAmerica(Locale):
 
 class Uruguay(Locale):
     _iso_code = 'UY'
-    english_name = 'Uruguay'
+    _english_name = 'Uruguay'
     _flag = 'flags\\UY.png'
     languages = [
         Spanish(u'Uruguay', lcid=0x380A)
@@ -7474,7 +7504,7 @@ class Uruguay(Locale):
 
 class Uzbekistan(Locale):
     _iso_code = 'UZ'
-    english_name = 'Uzbekistan'
+    _english_name = 'Uzbekistan'
     _flag = 'flags\\UZ.png'
     languages = [
         KaraKalpak(u'O\'zbekstan', lcid=None),
@@ -7485,7 +7515,7 @@ class Uzbekistan(Locale):
 
 class Vanuatu(Locale):
     _iso_code = 'VU'
-    english_name = 'Vanuatu'
+    _english_name = 'Vanuatu'
     _flag = 'flags\\VU.png'
     languages = [
         Bislama(u'Vanuatu', lcid=None),
@@ -7496,7 +7526,7 @@ class Vanuatu(Locale):
 
 class Venezuela(Locale):
     _iso_code = 'VE'
-    english_name = 'Venezuela'
+    _english_name = 'Venezuela'
     _flag = 'flags\\VE.png'
     languages = [
         Spanish(u'Venezuela', lcid=0x200A)
@@ -7505,7 +7535,7 @@ class Venezuela(Locale):
 
 class Vietnam(Locale):
     _iso_code = 'VN'
-    english_name = 'Vietnam'
+    _english_name = 'Vietnam'
     _flag = 'flags\\VN.png'
     languages = [
         Vietnamese(u'Việt Nam', lcid=0x042A)
@@ -7514,7 +7544,7 @@ class Vietnam(Locale):
 
 class WallisandFutuna(Locale):
     _iso_code = 'WF'
-    english_name = 'Wallis and Futuna'
+    _english_name = 'Wallis and Futuna'
     _flag = 'flags\\WF.png'
     languages = [
         French(u'Wallis-et-Futuna', lcid=0x1000)
@@ -7523,7 +7553,7 @@ class WallisandFutuna(Locale):
 
 class WesternSahara(Locale):
     _iso_code = 'EH'
-    english_name = 'Western Sahara'
+    _english_name = 'Western Sahara'
     _flag = 'flags\\EH.png'
     languages = [
         Arabic(u'الصحراء الغربية', lcid=None),
@@ -7534,7 +7564,7 @@ class WesternSahara(Locale):
 
 class World(Locale):
     _iso_code = '001'
-    english_name = 'World'
+    _english_name = 'World'
     _flag = None
     languages = [
         Arabic(u'', lcid=0x0001),
@@ -7547,7 +7577,7 @@ class World(Locale):
 
 class Yemen(Locale):
     _iso_code = 'YE'
-    english_name = 'Yemen'
+    _english_name = 'Yemen'
     _flag = 'flags\\YE.png'
     languages = [
         Arabic(u'اليمن', lcid=0x2401)
@@ -7556,7 +7586,7 @@ class Yemen(Locale):
 
 class Zambia(Locale):
     _iso_code = 'ZM'
-    english_name = 'Zambia'
+    _english_name = 'Zambia'
     _flag = 'flags\\ZM.png'
     languages = [
         English(u'Zambia', lcid=0x1000),
@@ -7566,7 +7596,7 @@ class Zambia(Locale):
 
 class Zimbabwe(Locale):
     _iso_code = 'ZW'
-    english_name = 'Zimbabwe'
+    _english_name = 'Zimbabwe'
     _flag = 'flags\\ZW.png'
     languages = [
         English(u'Zimbabwe', lcid=0x3009),
