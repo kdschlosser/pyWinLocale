@@ -16,11 +16,13 @@
 # You should have received a copy of the GNU General Public License along
 # with EventGhost. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import ctypes
 import os
 import sys
+import six
 import locale as _locale
-from ctypes.wintypes import LCID, DWORD, INT, WCHAR
+from ctypes.wintypes import LCID, DWORD, INT, WCHAR, LPCWSTR
 
 try:
     wx = __import__('wx')
@@ -824,6 +826,355 @@ except ImportError:
     wx = None
     LCID_TO_WX = {}
 
+
+CODE_PAGES = {
+    # IBM EBCDIC US-Canada
+    037: 'IBM037',
+    # OEM United States
+    437: 'IBM437',
+    # IBM EBCDIC International
+    500: 'IBM500',
+    # Arabic (ASMO 708)
+    708: 'ASMO-708',
+    # Arabic (ASMO-449+, BCON V4)
+    709: 'ASMO-708',
+    # Arabic (Transparent ASMO);
+    # Arabic (DOS)
+    720: 'DOS-720',
+    # OEM Greek (formerly 437G);
+    # Greek (DOS)
+    737: 'ibm737',
+    # OEM Baltic;
+    # Baltic (DOS)
+    775: 'ibm775',
+    # OEM Multilingual Latin 1;
+    # Western European (DOS)
+    850: 'ibm850',
+    # OEM Latin 2;
+    # Central European (DOS)
+    852: 'ibm852',
+    # OEM Cyrillic (primarily Russian)
+    855: 'IBM855',
+    # OEM Turkish;
+    # Turkish (DOS)
+    857: 'ibm857',
+    # OEM Multilingual Latin 1 + Euro symbol
+    858: 'IBM00858',
+    # OEM Portuguese;
+    # Portuguese (DOS)
+    860: 'IBM860',
+    # OEM Icelandic;
+    # Icelandic (DOS)
+    861: 'ibm861',
+    # OEM Hebrew;
+    # Hebrew (DOS)
+    862: 'DOS-862',
+    # OEM French Canadian;
+    #  French Canadian (DOS)
+    863: 'IBM863',
+    # OEM Arabic;
+    # Arabic (864)
+    864: 'IBM864',
+    # OEM Nordic;
+    # Nordic (DOS)
+    865: 'IBM865',
+    # OEM Russian;
+    # Cyrillic (DOS)
+    866: 'cp866',
+    # OEM Modern Greek;
+    # Greek, Modern (DOS)
+    869: 'ibm869',
+    # IBM EBCDIC Multilingual/ROECE (Latin 2);
+    # IBM EBCDIC Multilingual Latin 2
+    870: 'IBM870',
+    # ANSI/OEM Thai (ISO 8859-11);
+    # Thai (Windows)
+    874: 'windows-874',
+    # IBM EBCDIC Greek Modern
+    875: 'cp875',
+    # ANSI/OEM Japanese;
+    # Japanese (Shift-JIS)
+    932: 'shift_jis',
+    # ANSI/OEM Simplified Chinese (PRC, Singapore);
+    # Chinese Simplified (GB2312)
+    936: 'gb2312',
+    # ANSI/OEM Korean (Unified Hangul Code)
+    949: 'ks_c_5601-1987',
+    # ANSI/OEM Traditional Chinese (Taiwan; Hong Kong SAR, PRC);
+    # Chinese Traditional (Big5)
+    950: 'big5',
+    # IBM EBCDIC Turkish (Latin 5)
+    1026: 'IBM1026',
+    # IBM EBCDIC Latin 1/Open System
+    1047: 'IBM01047',
+    # IBM EBCDIC US-Canada (037 + Euro symbol);
+    # IBM EBCDIC (US-Canada-Euro)
+    1140: 'IBM01140',
+    # IBM EBCDIC Germany (20273 + Euro symbol);
+    # IBM EBCDIC (Germany-Euro)
+    1141: 'IBM01141',
+    # IBM EBCDIC Denmark-Norway (20277 + Euro symbol);
+    # IBM EBCDIC (Denmark-Norway-Euro)
+    1142: 'IBM01142',
+    # IBM EBCDIC Finland-Sweden (20278 + Euro symbol);
+    # IBM EBCDIC (Finland-Sweden-Euro)
+    1143: 'IBM01143',
+    # IBM EBCDIC Italy (20280 + Euro symbol);
+    # IBM EBCDIC (Italy-Euro)
+    1144: 'IBM01144',
+    # IBM EBCDIC Latin America-Spain (20284 + Euro symbol);
+    # IBM EBCDIC (Spain-Euro)
+    1145: 'IBM01145',
+    # IBM EBCDIC United Kingdom (20285 + Euro symbol);
+    # IBM EBCDIC (UK-Euro)
+    1146: 'IBM01146',
+    # IBM EBCDIC France (20297 + Euro symbol);
+    # IBM EBCDIC (France-Euro)
+    1147: 'IBM01147',
+    # IBM EBCDIC International (500 + Euro symbol);
+    # IBM EBCDIC (International-Euro)
+    1148: 'IBM01148',
+    # IBM EBCDIC Icelandic (20871 + Euro symbol);
+    # IBM EBCDIC (Icelandic-Euro)
+    1149: 'IBM01149',
+    # Unicode UTF-16, little endian byte order (BMP of ISO 10646);
+    # available only to managed applications
+    1200: 'utf-16',
+    # Unicode UTF-16, big endian byte order;
+    # available only to managed applications
+    1201: 'unicodeFFFE',
+    # ANSI Central European;
+    # Central European (Windows)
+    1250: 'windows-1250',
+    # ANSI Cyrillic;
+    # Cyrillic (Windows)
+    1251: 'windows-1251',
+    # ANSI Latin 1;
+    # Western European (Windows)
+    1252: 'windows-1252',
+    # ANSI Greek;
+    # Greek (Windows)
+    1253: 'windows-1253',
+    # ANSI Turkish;
+    # Turkish (Windows)
+    1254: 'windows-1254',
+    # ANSI Hebrew;
+    # Hebrew (Windows)
+    1255: 'windows-1255',
+    # ANSI Arabic;
+    # Arabic (Windows)
+    1256: 'windows-1256',
+    # ANSI Baltic;
+    # Baltic (Windows)
+    1257: 'windows-1257',
+    # ANSI/OEM Vietnamese;
+    # Vietnamese (Windows)
+    1258: 'windows-1258',
+    # Korean (Johab)
+    1361: 'Johab',
+    # MAC Roman; Western European (Mac)
+    10000: 'macintosh',
+    # Japanese (Mac)
+    10001: 'x-mac-japanese',
+    # MAC Traditional Chinese (Big5);
+    # Chinese Traditional (Mac)
+    10002: 'x-mac-chinesetrad',
+    # Korean (Mac)
+    10003: 'x-mac-korean',
+    # Arabic (Mac)
+    10004: 'x-mac-arabic',
+    # Hebrew (Mac)
+    10005: 'x-mac-hebrew',
+    # Greek (Mac)
+    10006: 'x-mac-greek',
+    # Cyrillic (Mac)
+    10007: 'x-mac-cyrillic',
+    # MAC Simplified Chinese (GB 2312);
+    # Chinese Simplified (Mac)
+    10008: 'x-mac-chinesesimp',
+    # Romanian (Mac)
+    10010: 'x-mac-romanian',
+    # Ukrainian (Mac)
+    10017: 'x-mac-ukrainian',
+    # Thai (Mac)
+    10021: 'x-mac-thai',
+    # MAC Latin 2;
+    # Central European (Mac)
+    10029: 'x-mac-ce',
+    # Icelandic (Mac)
+    10079: 'x-mac-icelandic',
+    # Turkish (Mac)
+    10081: 'x-mac-turkish',
+    # Croatian (Mac)
+    10082: 'x-mac-croatian',
+    # Unicode UTF-32, little endian byte order;
+    # available only to managed applications
+    12000: 'utf-32',
+    # Unicode UTF-32, big endian byte order;
+    # available only to managed applications
+    12001: 'utf-32BE',
+    # CNS Taiwan;
+    # Chinese Traditional (CNS)
+    20000: 'x-Chinese_CNS',
+    # TCA Taiwan
+    20001: 'x-cp20001',
+    # Eten Taiwan;
+    # Chinese Traditional (Eten)
+    20002: 'x_Chinese-Eten',
+    # IBM5550 Taiwan
+    20003: 'x-cp20003',
+    # TeleText Taiwan
+    20004: 'x-cp20004',
+    # Wang Taiwan
+    20005: 'x-cp20005',
+    # IA5 (IRV International Alphabet No. 5, 7-bit);
+    # Western European (IA5)
+    20105: 'x-IA5',
+    # IA5 German (7-bit)
+    20106: 'x-IA5-German',
+    # IA5 Swedish (7-bit)
+    20107: 'x-IA5-Swedish',
+    # IA5 Norwegian (7-bit)
+    20108: 'x-IA5-Norwegian',
+    # US-ASCII (7-bit)
+    20127: 'us-ascii',
+    # T.61
+    20261: 'x-cp20261',
+    # ISO 6937 Non-Spacing Accent
+    20269: 'x-cp20269',
+    # IBM EBCDIC Germany
+    20273: 'IBM273',
+    # IBM EBCDIC Denmark-Norway
+    20277: 'IBM277',
+    # IBM EBCDIC Finland-Sweden
+    20278: 'IBM278',
+    # IBM EBCDIC Italy
+    20280: 'IBM280',
+    # IBM EBCDIC Latin America-Spain
+    20284: 'IBM284',
+    # IBM EBCDIC United Kingdom
+    20285: 'IBM285',
+    # IBM EBCDIC Japanese Katakana Extended
+    20290: 'IBM290',
+    # IBM EBCDIC France
+    20297: 'IBM297',
+    # IBM EBCDIC Arabic
+    20420: 'IBM420',
+    # IBM EBCDIC Greek
+    20423: 'IBM423',
+    # IBM EBCDIC Hebrew
+    20424: 'IBM424',
+    # IBM EBCDIC Korean Extended
+    20833: 'x-EBCDIC-KoreanExtended',
+    # IBM EBCDIC Thai
+    20838: 'IBM-Thai',
+    # Russian (KOI8-R);
+    # Cyrillic (KOI8-R)
+    20866: 'koi8-r',
+    # IBM EBCDIC Icelandic
+    20871: 'IBM871',
+    # IBM EBCDIC Cyrillic Russian
+    20880: 'IBM880',
+    # IBM EBCDIC Turkish
+    20905: 'IBM905',
+    # IBM EBCDIC Latin 1/Open System (1047 + Euro symbol)
+    20924: 'IBM00924',
+    # Japanese (JIS 0208-1990 and 0212-1990)
+    20932: 'EUC-JP',
+    # Simplified Chinese (GB2312);
+    # Chinese Simplified (GB2312-80)
+    20936: 'x-cp20936',
+    # Korean Wansung
+    20949: 'x-cp20949',
+    # IBM EBCDIC Cyrillic Serbian-Bulgarian
+    21025: 'cp1025',
+    # Ukrainian (KOI8-U);
+    # Cyrillic (KOI8-U)
+    21866: 'koi8-u',
+    # ISO 8859-1 Latin 1;
+    # Western European (ISO)
+    28591: 'iso-8859-1',
+    # ISO 8859-2 Central European;
+    # Central European (ISO)
+    28592: 'iso-8859-2',
+    # ISO 8859-3 Latin 3
+    28593: 'iso-8859-3',
+    # ISO 8859-4 Baltic
+    28594: 'iso-8859-4',
+    # ISO 8859-5 Cyrillic
+    28595: 'iso-8859-5',
+    # ISO 8859-6 Arabic
+    28596: 'iso-8859-6',
+    # ISO 8859-7 Greek
+    28597: 'iso-8859-7',
+    # ISO 8859-8 Hebrew;
+    # Hebrew (ISO-Visual)
+    28598: 'iso-8859-8',
+    # ISO 8859-9 Turkish
+    28599: 'iso-8859-9',
+    # ISO 8859-13 Estonian
+    28603: 'iso-8859-13',
+    # ISO 8859-15 Latin 9
+    28605: 'iso-8859-15',
+    # Europa 3
+    29001: 'x-Europa',
+    # ISO 8859-8 Hebrew;
+    # Hebrew (ISO-Logical)
+    38598: 'iso-8859-8-i',
+    # ISO 2022 Japanese with no halfwidth Katakana;
+    # Japanese (JIS)
+    50220: 'iso-2022-jp',
+    # ISO 2022 Japanese with halfwidth Katakana;
+    # Japanese (JIS-Allow 1 byte Kana)
+    50221: 'csISO2022JP',
+    # ISO 2022 Japanese JIS X 0201-1989;
+    # Japanese (JIS-Allow 1 byte Kana - SO/SI)
+    50222: 'iso-2022-jp',
+    # ISO 2022 Korean
+    50225: 'iso-2022-kr',
+    # ISO 2022 Simplified Chinese;
+    # Chinese Simplified (ISO 2022)
+    50227: 'x-cp50227',
+    # EUC Japanese
+    51932: 'euc-jp',
+    # EUC Simplified Chinese;
+    # Chinese Simplified (EUC)
+    51936: 'EUC-CN',
+    # EUC Korean
+    51949: 'euc-kr',
+    # HZ-GB2312 Simplified Chinese;
+    # Chinese Simplified (HZ)
+    52936: 'hz-gb-2312',
+    # Windows XP and later:
+    # GB18030 Simplified Chinese (4 byte);
+    # Chinese Simplified (GB18030)
+    54936: 'GB18030',
+    # ISCII Devanagari
+    57002: 'x-iscii-de',
+    # ISCII Bangla
+    57003: 'x-iscii-be',
+    # ISCII Tamil
+    57004: 'x-iscii-ta',
+    # ISCII Telugu
+    57005: 'x-iscii-te',
+    # ISCII Assamese
+    57006: 'x-iscii-as',
+    # ISCII Odia
+    57007: 'x-iscii-or',
+    # ISCII Kannada
+    57008: 'x-iscii-ka',
+    # ISCII Malayalam
+    57009: 'x-iscii-ma',
+    # ISCII Gujarati
+    57010: 'x-iscii-gu',
+    # ISCII Punjabi
+    57011: 'x-iscii-pa',
+    # Unicode (UTF-7)
+    65000: 'utf-7',
+    # Unicode (UTF-8)
+    65001: 'utf-8',
+}
+
 PY3 = sys.version_info[0] > 2
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -831,11 +1182,47 @@ BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 
 kernel32 = ctypes.windll.Kernel32
 
+# int GetLocaleInfoEx(
+#   LPCWSTR lpLocaleName,
+#   LCTYPE  LCType,
+#   LPWSTR  lpLCData,
+#   int     cchData
+# );
+
+LCTYPE = DWORD
+
+_GetLocaleInfoEx = kernel32.GetLocaleInfoEx
+# _GetLocaleInfoEx.argtypes = [LPCWSTR, LCTYPE, LPWSTR, INT]
+_GetLocaleInfoEx.restype = INT
+
+def get_locale_info(lpLocaleName, LCType):
+    if not isinstance(LCType, LCTYPE):
+        LCType = LCTYPE(LCType)
+
+    lpLCData = (ctypes.c_wchar * 0)()
+
+    cchData = _GetLocaleInfoEx(LPCWSTR(lpLocaleName), LCType, lpLCData, 0)
+    if cchData == 0:
+        raise ctypes.WinError()
+
+    lpLCData = (ctypes.c_wchar * cchData)()
+    res = _GetLocaleInfoEx(LPCWSTR(lpLocaleName), LCType, lpLCData, cchData)
+
+    if res == 0:
+        raise ctypes.WinError()
+
+    output = ''
+    for i in range(res):
+        output += lpLCData[i]
+
+    return output
+
 # LCID LocaleNameToLCID(
 #   LPCWSTR lpName,
 #   DWORD   dwFlags
 # );
 _LocaleNameToLCID = kernel32.LocaleNameToLCID
+_LocaleNameToLCID.argtypes = [LPCWSTR, DWORD]
 _LocaleNameToLCID.restype = LCID
 
 # int LCIDToLocaleName(
@@ -906,7 +1293,8 @@ def locale_name_to_lcid(locale_name):
             locale_name = locale_name.encode('utf-8')
         else:
             # noinspection PyUnresolvedReferences
-            locale_name = unicode(locale_name)
+            pass
+    locale_name = unicode(locale_name)
 
     res = _LocaleNameToLCID(locale_name, DWORD(0))
     if res == 0:
@@ -914,19 +1302,90 @@ def locale_name_to_lcid(locale_name):
     return res
 
 
+def add_separator(num, sep, group_len):
+    from textwrap import wrap
+
+    def reverse_string(s):
+        return ''.join(s[i] for i in range(len(s) - 1, -1, -1))
+
+    # we need to reverse the number to add the separators. the group count
+    # starts at index 0 of the string. so if wee have a number of 1234567
+    # and a group length of 3 we do not want to end up with 123,456,7
+    # this would be incorrect. so we need to make the count start from the end
+    rev = reverse_string(str(num))
+
+    # we use the stdlib wraptext.wrap to split the string into the group
+    # lengths we need
+
+    last_g_len = None
+    groups = []
+
+    for g_len in group_len:
+        if last_g_len is None:
+            last_g_len = g_len
+        else:
+            if not g_len:
+                groups += wrap(rev, g_len)
+                last_g_len = None
+                break
+            else:
+                groups += wrap(rev, last_g_len)[0]
+                last_g_len = g_len
+                rev = rev.replace(''.join(groups[-1:]), 1)
+
+    if last_g_len is not None:
+        groups += wrap(rev, last_g_len)
+
+    # we then add in the separator by joining the list of groups returned
+    # from wraptext.wrap
+    rev_output = sep.join(groups)
+
+    # and finally we flip the string once again putting it back the way it was
+    output = reverse_string(rev_output)
+    return output
+
+
+class NumberFormat(str):
+    def __init__(
+        self,
+        template,
+        group_sep,
+        group_len,
+        decimal_sep=None,
+        precision=None
+    ):
+        self._decimal_sep = decimal_sep
+        self._group_sep = group_sep
+        self._group_len = group_len
+        self._precision = precision
+
+        str.__init__(self, template)
+
+    def format(self, value):
+        if isinstance(value, int):
+            digits = add_separator(value, self._group_sep, self._group_len)
+            return str.format(self, digits)
+        elif isinstance(value, float):
+            digits, decimal = str(value).split('.')
+            if self._precision is not None:
+                decimal = decimal[:self._precision]
+
+            digits = add_separator(digits, self._group_sep, self._group_len)
+            return str.format(self, digits + self._decimal_sep + decimal)
+
+        raise ValueError('format value is not an int or a float')
+
+
 class Language(object):
     ISO639_1 = None
     ISO639_2 = None
     ISO639_3 = None
-    english_name = ''
-    native_name = u''
     _lcid = None
     _lang_id = None
 
     def __init__(self, locale_name, lcid=None):
         if lcid is not None:
             self._lcid = lcid
-        self.locale_name = locale_name
         self.locale = None
         self._iso_code = None
 
@@ -969,10 +1428,6 @@ class Language(object):
                 )
 
         return False
-
-    @property
-    def label(self):
-        return self.locale_name
 
     @property
     def iso_code(self):
@@ -1027,15 +1482,46 @@ class Language(object):
         if iso_code is None:
             return
 
-        locale = (
-            'LC_COLLATE={0};'
-            'LC_CTYPE={0};'
-            'LC_MONETARY={0};'
-            'LC_NUMERIC={0};'
-            'LC_TIME={0}'
-        ).format(self.iso_code)
+        code_page = self.ansi_code_page
 
-        _locale.setlocale(_locale.LC_ALL, locale)
+        def set_locale(c_page):
+            try:
+                print(
+                    _locale.setlocale(
+                        _locale.LC_ALL,
+                        iso_code + '.' + code_page
+                    )
+                )
+                return True
+            except (_locale.Error, TypeError):
+                return False
+
+        if set_locale(code_page):
+            return
+
+        if set_locale(''):
+            return
+
+        set_locale(None)
+
+
+    @property
+    def ansi_code_page(self):
+        code_page = self.default_ansi_codepage
+        try:
+            code_page = int(code_page)
+            return CODE_PAGES[code_page]
+        except (ValueError, KeyError):
+            return code_page
+
+    @property
+    def code_page(self):
+        code_page = self.default_codepage
+        try:
+            code_page = int(code_page)
+            return CODE_PAGES[code_page]
+        except (ValueError, KeyError):
+            return code_page
 
     def set_wx_locale(self):
         if wx is not None:
@@ -1048,6 +1534,1112 @@ class Language(object):
                 return
 
             app.locale = wx.Locale(wx_code)
+
+    def get_locale_info(self, flag):
+        res = get_locale_info(self.iso_code, flag)
+
+        if PY3:
+            output = b''
+            for char in list(res):
+                if char == 0:
+                    continue
+
+                output += char
+        else:
+            output = ''
+
+            for char in list(res):
+                if char == '\x00':
+                    continue
+
+                output += char
+
+        return output
+
+    # localized name of locale, eg "German (Germany)" in UI language
+    # DONE
+    LOCALE_SLOCALIZEDDISPLAYNAME = 0x00000002
+
+    @property
+    def label(self):
+        return self.get_locale_info(self.LOCALE_SLOCALIZEDDISPLAYNAME)
+
+    # Display name in native locale language, eg "Deutsch (Deutschland)
+    # DONE
+    LOCALE_SNATIVEDISPLAYNAME = 0x00000073
+
+    @property
+    def native_label(self):
+        return self.get_locale_info(self.LOCALE_SNATIVEDISPLAYNAME)
+
+    # Language Display Name for a language, eg "German" in UI language
+    # DONE
+    LOCALE_SLOCALIZEDLANGUAGENAME = 0x0000006f
+
+    @property
+    def name(self):
+        return self.get_locale_info(self.LOCALE_SLOCALIZEDLANGUAGENAME)
+
+    # English name of language, eg "German"
+    # DONE
+    LOCALE_SENGLISHLANGUAGENAME = 0x00001001
+
+    @property
+    def english_name(self):
+        return self.get_locale_info(self.LOCALE_SENGLISHLANGUAGENAME)
+
+    # native name of language, eg "Deutsch"
+    # DONE
+    LOCALE_SNATIVELANGUAGENAME = 0x00000004
+
+    @property
+    def native_name(self):
+        return self.get_locale_info(self.LOCALE_SNATIVELANGUAGENAME)
+
+    # localized name of country/region, eg "Germany" in UI language
+    # DONE
+    LOCALE_SLOCALIZEDCOUNTRYNAME = 0x00000006
+
+    @property
+    def locale_name(self):
+        return self.get_locale_info(self.LOCALE_SLOCALIZEDCOUNTRYNAME)
+
+    # English name of country/region, eg "Germany"
+    # DONE
+    LOCALE_SENGLISHCOUNTRYNAME = 0x00001002
+
+    @property
+    def english_locale_name(self):
+        return self.get_locale_info(self.LOCALE_SENGLISHCOUNTRYNAME)
+
+    # native name of country/region, eg "Deutschland"
+    # DONE
+    LOCALE_SNATIVECOUNTRYNAME = 0x00000008
+
+    @property
+    def native_locale_name(self):
+        return self.get_locale_info(self.LOCALE_SNATIVECOUNTRYNAME)
+
+    # Additional LCTypes
+    # country/region dialing code, example: en-US and en-CA return 1.
+    # DONE
+    LOCALE_IDIALINGCODE = 0x00000005
+
+    @property
+    def international_phone_prefix(self):
+        return self.get_locale_info(self.LOCALE_IDIALINGCODE)
+
+    # list item separator, eg "," for "1,2,3,4"
+    # DONE
+    LOCALE_SLIST = 0x0000000C
+
+    @property
+    def list_separator(self):
+        return self.get_locale_info(self.LOCALE_SLIST)
+
+    # 0 = metric, 1 = US measurement system
+    # DONE
+    LOCALE_IMEASURE = 0x0000000D
+
+    @property
+    def is_metric(self):
+        res = self.get_locale_info(self.LOCALE_IMEASURE)
+
+        if res == '1':
+            return False
+        return True
+
+    # decimal separator, eg "." for 1,234.00
+    # DONE
+    LOCALE_SDECIMAL = 0x0000000E
+
+    @property
+    def decimal_separator(self):
+        return self.get_locale_info(self.LOCALE_SDECIMAL)
+
+    # thousand separator, eg "," for 1,234.00
+    # DONE
+    LOCALE_STHOUSAND = 0x0000000F
+
+    @property
+    def numeric_group_separator(self):
+        return self.get_locale_info(self.LOCALE_STHOUSAND)
+
+    # digit grouping, eg "3;0" for 1,000,000
+    # DONE
+    LOCALE_SGROUPING = 0x00000010
+
+    @property
+    def numeric_group_length(self):
+        res = self.get_locale_info(self.LOCALE_SGROUPING)
+        return list(int(itm) for itm in res.split(';'))
+
+    # number of fractional digits eg 2 for 1.00
+    # DONE
+    LOCALE_IDIGITS = 0x00000011
+
+    @property
+    def float_precision(self):
+        return int(self.get_locale_info(self.LOCALE_IDIGITS))
+
+    # leading zeros for decimal, 0 for .97, 1 for 0.97
+    # DONE
+    LOCALE_ILZERO = 0x00000012
+
+    @property
+    def float_leading_zeros(self):
+        return int(self.get_locale_info(self.LOCALE_ILZERO))
+
+    # negative number mode, 0-4, see documentation
+    # 0 	Left parenthesis, number, right parenthesis; for example, (1.1)
+    # 1 	Negative sign, number; for example, -1.1
+    # 2 	Negative sign, space, number; for example, - 1.1
+    # 3 	Number, negative sign; for example, 1.1-
+    # 4 	Number, space, negative sign; for example, 1.1 -
+    # DONE
+    LOCALE_INEGNUMBER = 0x00001010
+
+    @property
+    def numeric_neg_format(self):
+        res = self.get_locale_info(self.LOCALE_INEGNUMBER)
+
+        neg_formats = [
+            '({{0}})',
+            '{0}{{neg}}',
+            '{{0}}{neg}'
+            '{{0}} {neg}'
+        ]
+
+        neg_format = neg_formats[res]
+        if '{neg}' in neg_format:
+            neg_format = neg_format.format(neg=self.numeric_neg_symbol)
+
+        return NumberFormat(
+            neg_format,
+            self.numeric_group_separator,
+            self.numeric_group_length,
+            decimal_sep=self.decimal_separator,
+            precision=None
+        )
+
+    # native digits for 0-9, eg "0123456789"
+    LOCALE_SNATIVEDIGITS = 0x00000013
+
+    @property
+    def native_digits(self):
+        return self.get_locale_info(self.LOCALE_SNATIVEDIGITS)
+
+    # local monetary symbol, eg "$"
+    LOCALE_SCURRENCY = 0x00000014
+
+    @property
+    def currency_symbol(self):
+        return self.get_locale_info(self.LOCALE_SCURRENCY)
+
+    # intl monetary symbol, eg "USD"
+    LOCALE_SINTLSYMBOL = 0x00000015
+
+    @property
+    def currency_suffix(self):
+        return self.get_locale_info(self.LOCALE_SINTLSYMBOL)
+
+    # monetary decimal separator, eg "." for $1,234.00
+    LOCALE_SMONDECIMALSEP = 0x00000016
+
+    @property
+    def currency_decimal_separator(self):
+        return self.get_locale_info(self.LOCALE_SMONDECIMALSEP)
+
+    # monetary thousand separator, eg "," for $1,234.00
+    LOCALE_SMONTHOUSANDSEP = 0x00000017
+
+    @property
+    def currency_group_separator(self):
+        return self.get_locale_info(self.LOCALE_SMONTHOUSANDSEP)
+
+    # monetary grouping, eg "3;0" for $1,000,000.00
+    LOCALE_SMONGROUPING = 0x00000018
+
+    @property
+    def currency_group_length(self):
+        res = self.get_locale_info(self.LOCALE_SMONGROUPING)
+        return list(int(itm) for itm in res.split(';'))
+
+    # local monetary digits, eg 2 for $1.00
+    LOCALE_ICURRDIGITS = 0x00000019
+
+    @property
+    def currency_decimal_precision(self):
+        return int(self.get_locale_info(self.LOCALE_ICURRDIGITS))
+
+    # positive currency mode, 0-3, see documentation
+    LOCALE_ICURRENCY = 0x0000001B
+
+    # negative currency mode, 0-15, see documentation
+    LOCALE_INEGCURR = 0x0000001C
+
+    # SHORT date format string, eg "MM/dd/yyyy"
+    LOCALE_SSHORTDATE = 0x0000001F
+
+    @property
+    def date_format_short(self):
+        res = self.get_locale_info(self.LOCALE_SSHORTDATE)
+
+        month_count = res.count('M')
+        day_count = res.count('d')
+        year_count = res.count('y')
+
+        month_formats = [
+            '',
+            '%-m',
+            '%m',
+            '%b',
+            '%B'
+        ]
+        day_formats = [
+            '',
+            '%-d'
+            '%d'
+            '%a'
+            '%A'
+        ]
+        year_formats = [
+            '',
+            '%y',
+            '%y',
+            '',
+            '%Y',
+            '%Y'
+        ]
+
+        month_format = month_formats[month_count]
+        day_format = day_formats[day_count]
+        year_format = year_formats[year_count]
+
+        res = res.replace('M' * month_count, month_format)
+        res = res.replace('d' * day_count, day_format)
+        res = res.replace('y' * year_count, year_format)
+        return res
+
+    # LONG date format string, eg "dddd, MMMM dd, yyyy"
+    LOCALE_SLONGDATE = 0x00000020
+
+    @property
+    def date_format_long(self):
+        res = self.get_locale_info(self.LOCALE_SLONGDATE)
+
+        month_count = res.count('M')
+        day_count = res.count('d')
+        year_count = res.count('y')
+
+        month_formats = [
+            '',
+            '%-m',
+            '%m',
+            '%b',
+            '%B'
+        ]
+        day_formats = [
+            '',
+            '%-d'
+            '%d'
+            '%a'
+            '%A'
+        ]
+        year_formats = [
+            '',
+            '%y',
+            '%y',
+            '',
+            '%Y',
+            '%Y'
+        ]
+
+        month_format = month_formats[month_count]
+        day_format = day_formats[day_count]
+        year_format = year_formats[year_count]
+
+        res = res.replace('M' * month_count, month_format)
+        res = res.replace('d' * day_count, day_format)
+        res = res.replace('y' * year_count, year_format)
+        return res
+
+    # time format string, eg "HH:mm:ss"
+    LOCALE_STIMEFORMAT = 0x00001003
+
+    @property
+    def time_format(self):
+        res = self.get_locale_info(self.LOCALE_STIMEFORMAT)
+
+        hour_count = res.count('h')
+        if not hour_count:
+            hour_count = res.count('H') * 3
+
+        minute_count = res.count('m')
+        second_count = res.count('s')
+        suffix_count = res.count('t')
+
+        hour_formats = [
+            '',
+            '%-I',
+            '%I',
+            '%-H',
+            '',
+            '',
+            '%H'
+        ]
+        minute_formats = [
+            '',
+            '%-M',
+            '%M'
+        ]
+        second_formats = [
+            '',
+            '%-S',
+            '%S'
+        ]
+        suffix_formats = [
+            '',
+            '%p',
+            '%p'
+        ]
+
+        hour_format = hour_formats[hour_count]
+        minute_format = minute_formats[minute_count]
+        second_format = second_formats[second_count]
+        suffix_format = suffix_formats[suffix_count]
+        if hour_count < 3:
+            res = res.replsce('h' * hour_count, hour_format)
+        else:
+            res = res.replsce('H' * (hour_count / 3), hour_format)
+        res = res.replsce('m' * minute_count, minute_format)
+        res = res.replsce('s' * second_count, second_format)
+        res = res.replsce('t' * suffix_count, suffix_format)
+
+        return res
+
+    # AM designator, eg "AM"
+    LOCALE_SAM = 0x00000028
+
+    @property
+    def time_suffix_morning(self):
+        return self.get_locale_info(self.LOCALE_SAM)
+
+    # PM designator, eg "PM"
+    LOCALE_SPM = 0x00000029
+
+    @property
+    def time_suffix_evening(self):
+        return self.get_locale_info(self.LOCALE_SPM)
+
+    # type of calendar specifier, eg CAL_GREGORIAN
+    LOCALE_ICALENDARTYPE = 0x00001009
+
+    # additional calendar types specifier, eg CAL_GREGORIAN_US
+    LOCALE_IOPTIONALCALENDAR = 0x0000100B
+
+    # first day of week specifier, 0-6, 0=Monday, 6=Sunday
+    LOCALE_IFIRSTDAYOFWEEK = 0x0000100C
+
+    @property
+    def calendar_week_start_day(self):
+        return int(self.get_locale_info(self.LOCALE_IFIRSTDAYOFWEEK))
+
+    # first week of year specifier, 0-2, see documentation
+    LOCALE_IFIRSTWEEKOFYEAR = 0x0000100D
+
+    @property
+    def calendar_first_wek_of_year(self):
+        return int(self.get_locale_info(self.LOCALE_IFIRSTWEEKOFYEAR))
+
+    # LONG name for Monday
+    LOCALE_SDAYNAME1 = 0x0000002A
+
+    # LONG name for Tuesday
+    LOCALE_SDAYNAME2 = 0x0000002B
+
+    # LONG name for Wednesday
+    LOCALE_SDAYNAME3 = 0x0000002C
+
+    # LONG name for Thursday
+    LOCALE_SDAYNAME4 = 0x0000002D
+
+    # LONG name for Friday
+    LOCALE_SDAYNAME5 = 0x0000002E
+
+    # LONG name for Saturday
+    LOCALE_SDAYNAME6 = 0x0000002F
+
+    # LONG name for Sunday
+    LOCALE_SDAYNAME7 = 0x00000030
+
+    def _get_week_day_long_name(self, day):
+        day += self.calendar_week_start_day
+
+        days = {
+            1:  self.LOCALE_SDAYNAME1,
+            3:  self.LOCALE_SDAYNAME2,
+            5:  self.LOCALE_SDAYNAME3,
+            7:  self.LOCALE_SDAYNAME4,
+            9:  self.LOCALE_SDAYNAME5,
+            11: self.LOCALE_SDAYNAME6,
+            13: self.LOCALE_SDAYNAME7
+        }
+
+        return self.get_locale_info(days[day])
+
+    @property
+    def calendar_week_day_1_long_name(self):
+        return self._get_week_day_long_name(1)
+
+    @property
+    def calendar_week_day_2_long_name(self):
+        return self._get_week_day_long_name(2)
+
+    @property
+    def calendar_week_day_3_long_name(self):
+        return self._get_week_day_long_name(3)
+
+    @property
+    def calendar_week_day_4_long_name(self):
+        return self._get_week_day_long_name(4)
+
+    @property
+    def calendar_week_day_5_long_name(self):
+        return self._get_week_day_long_name(5)
+
+    @property
+    def calendar_week_day_6_long_name(self):
+        return self._get_week_day_long_name(6)
+
+    @property
+    def calendar_week_day_7_long_name(self):
+        return self._get_week_day_long_name(7)
+
+    # abbreviated name for Monday
+    LOCALE_SABBREVDAYNAME1 = 0x00000031
+
+    # abbreviated name for Tuesday
+    LOCALE_SABBREVDAYNAME2 = 0x00000032
+
+    # abbreviated name for Wednesday
+    LOCALE_SABBREVDAYNAME3 = 0x00000033
+
+    # abbreviated name for Thursday
+    LOCALE_SABBREVDAYNAME4 = 0x00000034
+
+    # abbreviated name for Friday
+    LOCALE_SABBREVDAYNAME5 = 0x00000035
+
+    # abbreviated name for Saturday
+    LOCALE_SABBREVDAYNAME6 = 0x00000036
+
+    # abbreviated name for Sunday
+    LOCALE_SABBREVDAYNAME7 = 0x00000037
+
+    def _get_week_day_short_name(self, day):
+        day += self.calendar_week_start_day
+
+        days = {
+            1:  self.LOCALE_SABBREVDAYNAME1,
+            3:  self.LOCALE_SABBREVDAYNAME2,
+            5:  self.LOCALE_SABBREVDAYNAME3,
+            7:  self.LOCALE_SABBREVDAYNAME4,
+            9:  self.LOCALE_SABBREVDAYNAME5,
+            11: self.LOCALE_SABBREVDAYNAME6,
+            13: self.LOCALE_SABBREVDAYNAME7
+        }
+
+        return self.get_locale_info(days[day])
+
+    @property
+    def calendar_week_day_1_short_name(self):
+        return self._get_week_day_short_name(1)
+
+    @property
+    def calendar_week_day_2_short_name(self):
+        return self._get_week_day_short_name(2)
+
+    @property
+    def calendar_week_day_3_short_name(self):
+        return self._get_week_day_short_name(3)
+
+    @property
+    def calendar_week_day_4_short_name(self):
+        return self._get_week_day_short_name(4)
+
+    @property
+    def calendar_week_day_5_short_name(self):
+        return self._get_week_day_short_name(5)
+
+    @property
+    def calendar_week_day_6_short_name(self):
+        return self._get_week_day_short_name(6)
+
+    @property
+    def calendar_week_day_7_short_name(self):
+        return self._get_week_day_short_name(7)
+
+    # Shortest day name for Monday
+    LOCALE_SSHORTESTDAYNAME1 = 0x00000060
+
+    # Shortest day name for Tuesday
+    LOCALE_SSHORTESTDAYNAME2 = 0x00000061
+
+    # Shortest day name for Wednesday
+    LOCALE_SSHORTESTDAYNAME3 = 0x00000062
+
+    # Shortest day name for Thursday
+    LOCALE_SSHORTESTDAYNAME4 = 0x00000063
+
+    # Shortest day name for Friday
+    LOCALE_SSHORTESTDAYNAME5 = 0x00000064
+
+    # Shortest day name for Saturday
+    LOCALE_SSHORTESTDAYNAME6 = 0x00000065
+
+    # Shortest day name for Sunday
+    LOCALE_SSHORTESTDAYNAME7 = 0x00000066
+
+    def _get_week_day_shortest_name(self, day):
+        day += self.calendar_week_start_day
+
+        days = {
+            1:  self.LOCALE_SSHORTESTDAYNAME1,
+            3:  self.LOCALE_SSHORTESTDAYNAME2,
+            5:  self.LOCALE_SSHORTESTDAYNAME3,
+            7:  self.LOCALE_SSHORTESTDAYNAME4,
+            9:  self.LOCALE_SSHORTESTDAYNAME5,
+            11: self.LOCALE_SSHORTESTDAYNAME6,
+            13: self.LOCALE_SSHORTESTDAYNAME7
+        }
+
+        return self.get_locale_info(days[day])
+
+    @property
+    def calendar_week_day_1_shortest_name(self):
+        return self._get_week_day_shortest_name(1)
+
+    @property
+    def calendar_week_day_2_shortest_name(self):
+        return self._get_week_day_shortest_name(2)
+
+    @property
+    def calendar_week_day_3_shortest_name(self):
+        return self._get_week_day_shortest_name(3)
+
+    @property
+    def calendar_week_day_4_shortest_name(self):
+        return self._get_week_day_shortest_name(4)
+
+    @property
+    def calendar_week_day_5_shortest_name(self):
+        return self._get_week_day_shortest_name(5)
+
+    @property
+    def calendar_week_day_6_shortest_name(self):
+        return self._get_week_day_shortest_name(6)
+
+    @property
+    def calendar_week_day_7_shortest_name(self):
+        return self._get_week_day_shortest_name(7)
+
+    # LONG name for January
+    LOCALE_SMONTHNAME1 = 0x00000038
+
+    @property
+    def calendar_month_1_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME1)
+
+    # LONG name for February
+    LOCALE_SMONTHNAME2 = 0x00000039
+
+    @property
+    def calendar_month_2_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME2)
+
+    # LONG name for March
+    LOCALE_SMONTHNAME3 = 0x0000003A
+
+    @property
+    def calendar_month_3_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME3)
+
+    # LONG name for April
+    LOCALE_SMONTHNAME4 = 0x0000003B
+
+    @property
+    def calendar_month_4_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME4)
+
+    # LONG name for May
+    LOCALE_SMONTHNAME5 = 0x0000003C
+
+    @property
+    def calendar_month_5_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME5)
+
+    # LONG name for June
+    LOCALE_SMONTHNAME6 = 0x0000003D
+
+    @property
+    def calendar_month_6_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME6)
+
+    # LONG name for July
+    LOCALE_SMONTHNAME7 = 0x0000003E
+
+    @property
+    def calendar_month_7_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME7)
+
+    # LONG name for August
+    LOCALE_SMONTHNAME8 = 0x0000003F
+
+    @property
+    def calendar_month_8_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME8)
+
+    # LONG name for September
+    LOCALE_SMONTHNAME9 = 0x00000040
+
+    @property
+    def calendar_month_9_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME9)
+
+    # LONG name for October
+    LOCALE_SMONTHNAME10 = 0x00000041
+
+    @property
+    def calendar_month_10_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME10)
+
+    # LONG name for November
+    LOCALE_SMONTHNAME11 = 0x00000042
+
+    @property
+    def calendar_month_11_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME11)
+
+    # LONG name for December
+    LOCALE_SMONTHNAME12 = 0x00000043
+
+    @property
+    def calendar_month_12_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME12)
+
+    # LONG name for 13th month (if exists)
+    LOCALE_SMONTHNAME13 = 0x0000100E
+
+    @property
+    def calendar_month_13_long_name(self):
+        return self.get_locale_info(self.LOCALE_SMONTHNAME13)
+
+    # abbreviated name for January
+    LOCALE_SABBREVMONTHNAME1 = 0x00000044
+
+    @property
+    def calendar_month_1_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME1)
+
+    # abbreviated name for February
+    LOCALE_SABBREVMONTHNAME2 = 0x00000045
+
+    @property
+    def calendar_month_2_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME2)
+
+    # abbreviated name for March
+    LOCALE_SABBREVMONTHNAME3 = 0x00000046
+
+    @property
+    def calendar_month_3_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME3)
+
+    # abbreviated name for April
+    LOCALE_SABBREVMONTHNAME4 = 0x00000047
+
+    @property
+    def calendar_month_4_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME4)
+
+    # abbreviated name for May
+    LOCALE_SABBREVMONTHNAME5 = 0x00000048
+
+    @property
+    def calendar_month_5_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME5)
+
+    # abbreviated name for June
+    LOCALE_SABBREVMONTHNAME6 = 0x00000049
+
+    @property
+    def calendar_month_6_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME6)
+
+    # abbreviated name for July
+    LOCALE_SABBREVMONTHNAME7 = 0x0000004A
+
+    @property
+    def calendar_month_7_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME7)
+
+    # abbreviated name for August
+    LOCALE_SABBREVMONTHNAME8 = 0x0000004B
+
+    @property
+    def calendar_month_8_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME8)
+
+    # abbreviated name for September
+    LOCALE_SABBREVMONTHNAME9 = 0x0000004C
+
+    @property
+    def calendar_month_9_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME9)
+
+    # abbreviated name for October
+    LOCALE_SABBREVMONTHNAME10 = 0x0000004D
+
+    @property
+    def calendar_month_10_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME10)
+
+    # abbreviated name for November
+    LOCALE_SABBREVMONTHNAME11 = 0x0000004E
+
+    @property
+    def calendar_month_11_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME11)
+
+    # abbreviated name for December
+    LOCALE_SABBREVMONTHNAME12 = 0x0000004F
+
+    @property
+    def calendar_month_12_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME12)
+
+    # abbreviated name for 13th month (if exists)
+    LOCALE_SABBREVMONTHNAME13 = 0x0000100F
+
+    @property
+    def calendar_month_13_short_name(self):
+        return self.get_locale_info(self.LOCALE_SABBREVMONTHNAME13)
+
+    @property
+    def currency_pos_format(self):
+        return self.get_locale_info(self.LOCALE_SMONTHDAY)
+
+    @property
+    def currency_neg_format(self):
+        res = self.get_locale_info(self.LOCALE_SMONTHDAY)
+        currency_formats = [
+            '({0}{{0}})',
+            '{1}{0}{{0}}',
+            '{0}{1}{{0}}',
+            '{0}{{0}}{1}',
+            '({{0}}{0})',
+            '{1}{{0}}{0}',
+            '{{0}}{1}{0}',
+            '{{0}}{0}{1}',
+            '{1}{{0}} {0}',
+            '{1}{0} {{0}}',
+            '{{0}} {0}{1}',
+            '{0} {{0}}{1}',
+            '{0} {1}{{0}}',
+            '{{0}}{1} {0}',
+            '({0} {{0}})',
+            '({{0}} {0})'
+        ]
+
+        currency_format = currency_formats[res]
+
+        if '{1}' in currency_format:
+            currency_format = currency_format.format(
+                self.currency_symbol,
+                self.numeric_neg_symbol
+            )
+        else:
+            currency_format = currency_format.format(self.currency_symbol)
+
+        return NumberFormat(
+            currency_format,
+            self.currency_decimal_separator,
+            self.currency_group_separator,
+            self.currency_group_length,
+            self.currency_decimal_precision,
+        )
+
+    # positive sign, eg ""
+    LOCALE_SPOSITIVESIGN = 0x00000050
+
+    @property
+    def numeric_pos_symbol(self):
+        return self.get_locale_info(self.LOCALE_SPOSITIVESIGN)
+
+    # negative sign, eg "-"
+    LOCALE_SNEGATIVESIGN = 0x00000051
+
+    @property
+    def numeric_neg_symbol(self):
+        return self.get_locale_info(self.LOCALE_SNEGATIVESIGN)
+
+    # positive sign position (derived from INEGCURR)
+    LOCALE_IPOSSIGNPOSN = 0x00000052
+
+    # negative sign position (derived from INEGCURR)
+    LOCALE_INEGSIGNPOSN = 0x00000053
+
+    # mon sym precedes pos amt (derived from ICURRENCY)
+    LOCALE_IPOSSYMPRECEDES = 0x00000054
+
+    # mon sym sep by space from pos amt (derived from ICURRENCY)
+    LOCALE_IPOSSEPBYSPACE = 0x00000055
+
+    # mon sym precedes neg amt (derived from INEGCURR)
+    LOCALE_INEGSYMPRECEDES = 0x00000056
+
+    # mon sym sep by space from neg amt (derived from INEGCURR)
+    LOCALE_INEGSEPBYSPACE = 0x00000057
+
+    # english name of currency, eg "Euro"
+    LOCALE_SENGCURRNAME = 0x00001007
+
+    @property
+    def currency_nglish_name(self):
+        return self.get_locale_info(self.LOCALE_SENGCURRNAME)
+
+    # native name of currency, eg "euro"
+    LOCALE_SNATIVECURRNAME = 0x00001008
+
+    @property
+    def currency_native_name(self):
+        return self.get_locale_info(self.LOCALE_SNATIVECURRNAME)
+
+    # year month format string, eg "MM/yyyy"
+    LOCALE_SYEARMONTH = 0x00001006
+
+    # time duration format, eg "hh:mm:ss"
+    LOCALE_SDURATION = 0x0000005D
+
+    @property
+    def time_duration_format(self):
+        res = self.get_locale_info(self.LOCALE_SDURATION)
+
+        hour_formats = [
+            '',
+            '%-I',
+            '%I'
+        ]
+        minute_formats = [
+            '',
+            '%-M',
+            '%M'
+        ]
+        second_formats = [
+            '',
+            '%-S',
+            '%S'
+        ]
+        hour_count = res.count('h')
+        minute_count = res.count('m')
+        second_count = res.count('s')
+
+        hour_format = hour_formats[hour_count]
+        minute_format = minute_formats[minute_count]
+        second_format = second_formats[second_count]
+        res = res.replsce('h' * hour_count, hour_format)
+        res = res.replsce('m' * minute_count, minute_format)
+        res = res.replsce('s' * second_count, second_format)
+
+        if 'f' in res:
+            res = res.rsplit('.', 1)[0]
+
+        return res
+
+    # Not a Number, eg "NaN"
+    LOCALE_SNAN = 0x00000069
+
+    @property
+    def numeric_nan(self):
+        return self.get_locale_info(self.LOCALE_SNAN)
+
+    # + Infinity, eg "infinity"
+    LOCALE_SPOSINFINITY = 0x0000006A
+
+    @property
+    def numeric_pos_infinity(self):
+        return self.get_locale_info(self.LOCALE_SPOSINFINITY)
+
+    # - Infinity, eg "-infinity"
+    LOCALE_SNEGINFINITY = 0x0000006B
+
+    @property
+    def numeric_neg_infinity(self):
+        return self.get_locale_info(self.LOCALE_SNEGINFINITY)
+
+    # Returns one of the following 4 reading layout values:
+    # 0 - Left to right (eg en-US)
+    # 1 - Right to left (eg arabic locales)
+    # 2 - Vertical top to bottom with columns to the
+    #     left and also left to right (ja-JP locales)
+    # 3 - Vertical top to bottom with columns proceeding to the right
+    LOCALE_IREADINGLAYOUT = 0x00000070
+
+    @property
+    def script_orientation(self):
+        res = self.get_locale_info(self.LOCALE_IREADINGLAYOUT)
+
+        if res == 0:
+            return 'horizontal:left:right'
+        elif res == 1:
+            return 'horizontal:right:left'
+        elif res == 2:
+            return 'vertical:left:right'
+        else:
+            return 'vertical:right:left'
+
+    # Returns 0 for specific cultures, 1 for neutral cultures.
+    LOCALE_INEUTRAL = 0x00000071
+
+    # Returns 0-11 for the negative percent format
+    # 0 	Negative sign, number, space, percent; for example, -# %
+    # 1 	Negative sign, number, percent; for example, -#%
+    # 2 	Negative sign, percent, number; for example, -%#
+    # 3 	Percent, negative sign, number; for example, %-#
+    # 4 	Percent, number, negative sign; for example, %#-
+    # 5 	Number, negative sign, percent; for example, #-%
+    # 6 	Number, percent, negative sign; for example, #%-
+    # 7 	Negative sign, percent, space, number; for example, -% #
+    # 8 	Number, space, percent, negative sign; for example, # %-
+    # 9 	Percent, space, number, negative sign; for example, % #-
+    # 10 	Percent, space, negative sign, number; for example, % -#
+    # 11 	Number, negative sign, space, percent; for example, #- %
+    LOCALE_INEGATIVEPERCENT = 0x00000074
+
+    @property
+    def numeric_neg_percent_format(self):
+        res = self.get_locale_info(self.LOCALE_INEGATIVEPERCENT)
+
+        percent_formats = [
+            u'{1}{{0}} {0}',
+            u'{1}{{0}}{0}',
+            u'{1}{0}{{0}}',
+            u'{0}{1}{{0}}',
+            u'{0}{{0}}{1}',
+            u'{{0}}{1}{0}',
+            u'{{0}}{0}{1}',
+            u'{1}{0} {{0}}',
+            u'{{0}} {0}{1}',
+            u'{0} {{0}}{1}',
+            u'{0} {1}{{0}}',
+            u'{{0}}{1} {0}'
+        ]
+        percent_format = percent_formats[res]
+
+        return percent_format.format(
+            self.numeric_percent_symbol,
+            self.numeric_neg_symbol
+        )
+
+    # Returns 0-3 for the positive percent format
+    # 0 	Number, space, percent; for example, # %
+    # 1 	Number, percent; for example, #%
+    # 2 	Percent, number; for example, %#
+    # 3 	Percent, space, number; for example, % #
+    LOCALE_IPOSITIVEPERCENT = 0x00000075
+
+    @property
+    def numeric_pos_percent_format(self):
+        res = self.get_locale_info(self.LOCALE_IPOSITIVEPERCENT)
+
+        percent_formats = [
+            u'{{0}} {0}',
+            u'{{0}}{0}',
+            u'{0}{{0}}',
+            u'{0} {{0}}'
+        ]
+        percent_format = percent_formats[res]
+        return percent_format.format(self.numeric_percent_symbol)
+
+    # Returns the percent symbol
+    LOCALE_SPERCENT = 0x00000076
+
+    @property
+    def numeric_percent_symbol(self):
+        return self.get_locale_info(self.LOCALE_SPERCENT)
+
+    # Returns the preferred month/day format
+    LOCALE_SMONTHDAY = 0x00000078
+
+    @property
+    def date_preferred_format(self):
+        res = self.get_locale_info(self.LOCALE_SMONTHDAY)
+
+        month_count = res.count('M')
+        day_count = res.count('d')
+        year_count = res.count('y')
+
+        month_formats = [
+            '',
+            '%-m',
+            '%m',
+            '%b',
+            '%B'
+        ]
+        day_formats = [
+            '',
+            '%-d'
+            '%d'
+            '%a'
+            '%A'
+        ]
+        year_formats = [
+            '',
+            '%y',
+            '%y',
+            '',
+            '%Y',
+            '%Y'
+        ]
+
+        month_format = month_formats[month_count]
+        day_format = day_formats[day_count]
+        year_format = year_formats[year_count]
+
+        res = res.replace('M' * month_count, month_format)
+        res = res.replace('d' * day_count, day_format)
+        res = res.replace('y' * year_count, year_format)
+        return res
+
+    # Returns the preferred SHORT time format
+    # (ie: no seconds, just h:mm)
+    LOCALE_SSHORTTIME = 0x00000079
+
+    @property
+    def time_short_format(self):
+        res = self.get_locale_info(self.LOCALE_SSHORTTIME)
+        res = res.replace('hh', '%h')
+        res = res.replace('mm', '%m')
+        return res
+
+    # Returns the permille (U + 2030) symbol
+    LOCALE_SPERMILLE = 0x00000077
+
+    LOCALE_IDEFAULTANSICODEPAGE = 0x00001004
+
+    @property
+    def default_ansi_codepage(self):
+        return self.get_locale_info(self.LOCALE_IDEFAULTANSICODEPAGE)
+
+    LOCALE_IDEFAULTCODEPAGE = 0x0000000B
+
+    @property
+    def default_codepage(self):
+        return self.get_locale_info(self.LOCALE_IDEFAULTCODEPAGE)
+
+
+    LOCALE_SNAME = 0x0000005C
 
 
 class Locales(object):
@@ -1092,6 +2684,7 @@ class LocaleMeta(type):
         locale = type.__new__(mcs, name, bases, dct)
         instance = locale()
         for lang in instance.languages[:]:
+            print(lang.iso_code)
             if lang.iso_code is None:
                 instance.languages.remove(lang)
 
@@ -1100,8 +2693,8 @@ class LocaleMeta(type):
         return locale
 
 
+@six.add_metaclass(LocaleMeta)
 class Locale(object):
-    __metaclass__ = LocaleMeta
 
     _iso_code = ''
     english_name = ''
@@ -5983,49 +7576,56 @@ class Zimbabwe(Locale):
 
 
 if __name__ == '__main__':
-    pass
-    # found_wx_codes = []
-    # found_lcid_codes = []
-    #
-    # for c in countries:
-    #     print(c.english_name)
-    #     print('    COUNTRY CODE:', c.code)
-    #     for l in c.languages:
-    #         l_lcid = l.lcid
-    #         w_code = l.wx_code
-    #         print('   ', l.english_name)
-    #         print('   ', l.country_name)
-    #         print('        LANGUAGE CODES:', l.locale_names)
-    #         print('        LCID:          ', l_lcid)
-    #         print('        WX CODE:       ', w_code)
-    #
-    #         if l_lcid is not None and l_lcid not in found_lcid_codes:
-    #             found_lcid_codes += [l_lcid]
-    #
-    #         if w_code is not None and w_code not in found_wx_codes:
-    #             found_wx_codes += [w_code]
-    # print('\n')
-    # print('FOUND LCID COUNT:', len(found_lcid_codes))
-    # print('FOUND WX COUNT:  ', len(found_wx_codes))
-    # print('WX CODE COUNT:   ', len(list(LCID_TO_WX.keys())))
-    #
-    # import sys
-    #
-    # mod = sys.modules[__name__]
-    # num_countries = 0
-    # num_languages = 0
-    # num_country_languages = 0
-    #
-    # for cls_val in mod.__dict__.values():
-    #     try:
-    #         if issubclass(cls_val, Country):
-    #             num_countries += 1
-    #             num_country_languages += len(cls_val.languages)
-    #         elif issubclass(cls_val, Language):
-    #             num_languages += 1
-    #     except TypeError:
-    #         pass
-    #
-    # print('NUMBER OF COUNTRIES:         ', num_countries)
-    # print('NUMBER OF LANGUAGES:         ', num_languages)
-    # print('NUMBER OF COUNTRY LANGUAGES: ', num_country_languages)
+    locale_count = 0
+    language_count = 0
+    wx_count = 0
+    print('Supported Locals and Languages')
+    print('_' * 40)
+
+    def convert_lcid():
+        lcd = hex(lng.lcid)[2:].upper().replace('L', '')
+
+        while len(lcd) < 4:
+            lcd = '0' + lcd
+
+        return '0x' + lcd
+
+    for locl in locales:
+        locale_count += 1
+        print(locl.english_name, '-', locl.locale_iso_code)
+        for lng in locl:
+            language_count += 1
+
+            print('    english_name:', lng.english_name)
+            print('    english_locale_name:', lng.english_locale_name)
+            print('        name:', lng.name)
+            print('        locale_name: ', lng.locale_name)
+            print('        label:', lng.label)
+            print('        native_name:', lng.native_name)
+            print('        native_locale_name: ', lng.native_locale_name)
+            print('        native_label: ', lng.native_label)
+            print('        ansi codepage:', lng.ansi_code_page)
+            print('        codepage:', lng.code_page)
+            print('        Windows LCID:', convert_lcid())
+
+            if lng.wx_code is not None:
+                wx_count += 1
+
+    print('\n', '-' * 40, '\n')
+    lng = get_windows_user_language()
+    print('Current Windows user locale:', lng.locale_name, '-', lng.locale.locale_iso_code)
+    print('Current Windows user language:', lng.name, '-', lng.lang_iso_code)
+    print('Locale native name:', lng.native_locale_name)
+    print('Language native name:', lng.native_name)
+    print('ISO code:', lng.iso_code)
+    print('Ansi Codepage:', lng.ansi_code_page)
+    print('Codepage:', lng.code_page)
+    print('LCID:', convert_lcid())
+
+    print('\n', '-' * 40, '\n')
+    print('Supported locale count:', locale_count)
+    print('Supported language count:', language_count)
+    print('Supported wx locale/language count:', wx_count)
+
+    lng.set_locale()
+
